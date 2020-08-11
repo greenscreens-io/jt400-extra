@@ -1,0 +1,50 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>io.greenscreens.jt400</groupId>
+	<artifactId>jt400-extra</artifactId>
+	<version>1.0.0</version>
+
+	<name>JT400 Extra Pack</name>
+	<url>https://github.io/greenscreens-io/jt400-extra</url>
+	<organization>
+		<name>Green Screens Ltd.</name>
+		<url>https://www.greenscreens.io</url>
+	</organization>
+	<description>Green Screens JT400 Extension Pack - is a module on top of JT400 improving usage of JT400 ProgramCall class by helping to map IBM i program parameters and response formats. </description>
+	
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+	</properties>
+
+	<build>
+		<sourceDirectory>src/main/java</sourceDirectory>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.8.1</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<dependencies>
+		<dependency>
+			<groupId>net.sf.jt400</groupId>
+			<artifactId>jt400</artifactId>
+			<version>10.4</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.7.30</version>
+		</dependency>
+	</dependencies>
+
+</project>
