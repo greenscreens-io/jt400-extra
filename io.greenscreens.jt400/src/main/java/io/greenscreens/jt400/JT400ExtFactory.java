@@ -21,14 +21,15 @@ import io.greenscreens.jt400.interfaces.IJT400Params;
 import io.greenscreens.jt400.interfaces.IJT400Program;
 
 /**
- * JT400Extra factory class to wrap JT400Program interface
- * or to build ProgramCall argument list from definition class 
+ * JT400Extra factory class to wrap JT400Program interface,
+ * to build ProgramCall argument list from definition class,
+ * or to build format object from byte array response  
  */
 public enum JT400ExtFactory {
 	;
 	
 	/**
-	 * Build format from response bytes based on structure JT400Format structure
+	 * Build format from response bytes based on JT400Format structure
 	 * 
 	 * @param as400
 	 * @param format
@@ -112,8 +113,8 @@ public enum JT400ExtFactory {
 	 * @param program
 	 * @return
 	 */
-	final static public <T extends IJT400Program<? extends IJT400Params>> T createProgram(final Class<T> program) {
-		return createProgram(null, program);
+	final static public <T extends IJT400Program<? extends IJT400Params>> T create(final Class<T> program) {
+		return create(null, program);
 	}
 
 	/**
@@ -124,7 +125,7 @@ public enum JT400ExtFactory {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")	
-	final static public <T extends IJT400Program<? extends IJT400Params>> T createProgram(final AS400 as400, final Class<T> caller) {
+	final static public <T extends IJT400Program<? extends IJT400Params>> T create(final AS400 as400, final Class<T> caller) {
 	
 		Class<? extends IJT400Params> input = null;
 		
