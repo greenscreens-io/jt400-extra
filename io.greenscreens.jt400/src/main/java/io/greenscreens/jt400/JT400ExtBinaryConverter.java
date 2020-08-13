@@ -49,7 +49,7 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 * @throws Exception
 	 */
-	final static Object asAS400Bin1(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) throws Exception {
+	final static Object asAS400Bin1(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) {
 
 		Object value = null;
 		
@@ -77,7 +77,7 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 * @throws Exception
 	 */
-	final static Object asAS400Bin2(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) throws Exception {
+	final static Object asAS400Bin2(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) {
 
 		Object value = null;
 
@@ -100,7 +100,7 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 * @throws Exception
 	 */
-	final static Object asAS400Bin4(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) throws Exception {
+	final static Object asAS400Bin4(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) {
 
 		Object value = null;
 
@@ -123,7 +123,7 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 * @throws Exception
 	 */
-	final static Object asAS400Bin8(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) throws Exception {
+	final static Object asAS400Bin8(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) {
 
 		Object value = null;
 
@@ -146,7 +146,7 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 * @throws Exception
 	 */
-	final static Object asAS400UBin1(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) throws Exception {
+	final static Object asAS400UBin1(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) {
 
 		Object value = null;
 
@@ -169,7 +169,7 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 * @throws Exception
 	 */
-	final static Object asAS400UBin2(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) throws Exception {
+	final static Object asAS400UBin2(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) {
 
 		Object value = null;
 
@@ -192,7 +192,7 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 * @throws Exception
 	 */
-	final static Object asAS400UBin4(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) throws Exception {
+	final static Object asAS400UBin4(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) {
 
 		Object value = null;
 
@@ -215,7 +215,7 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 * @throws Exception
 	 */
-	final static Object asAS400UBin8(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) throws Exception {
+	final static Object asAS400UBin8(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) {
 
 		Object value = null;
 
@@ -236,7 +236,7 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 * @throws Exception
 	 */
-	final static Object asAS400Float4(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) throws Exception {
+	final static Object asAS400Float4(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) {
 
 		Object value = null;
 
@@ -259,7 +259,7 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 * @throws Exception
 	 */
-	final static Object asAS400Float8(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) throws Exception {
+	final static Object asAS400Float8(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) {
 
 		Object value = null;
 
@@ -282,7 +282,7 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 * @throws Exception
 	 */
-	final static Object asAS400DecFloat(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) throws Exception {
+	final static Object asAS400DecFloat(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) {
 
 		Object value = null;
 
@@ -307,7 +307,7 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 * @throws Exception
 	 */
-	final static Object asAS400ZonedDecimal(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) throws Exception {
+	final static Object asAS400ZonedDecimal(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) {
 
 		Object value = null;
 		
@@ -334,7 +334,7 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 * @throws Exception
 	 */
-	final static Object asAS400PackedDecimal(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) throws Exception {
+	final static Object asAS400PackedDecimal(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) {
 
 		Object value = null;
 		
@@ -361,7 +361,7 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 * @throws Exception
 	 */
-	final static Object asAS400Date(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) throws Exception {
+	final static Object asAS400Date(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp)  throws Exception {
 
 		Object value = null;
 		
@@ -383,7 +383,7 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 * @throws Exception
 	 */
-	final static Object asAS400Time(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) throws Exception {
+	final static Object asAS400Time(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp)  throws Exception {
 
 		Object value = null;
 		
@@ -425,7 +425,7 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 * @throws Exception
 	 */
-	final static Object asAS400Text(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) throws Exception {		
+	final static Object asAS400Text(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) {		
 		final AS400Text text = new AS400Text(format.length(), as400); 		
 		final String value = ((String)(text.toObject(tmp))).trim();
 		return value;

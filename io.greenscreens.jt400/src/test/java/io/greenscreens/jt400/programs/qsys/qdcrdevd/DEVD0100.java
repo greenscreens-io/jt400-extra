@@ -16,7 +16,7 @@ import io.greenscreens.jt400.interfaces.IJT400Format;
  */
 @JT400Format(length = 104)
 public class DEVD0100 implements IJT400Format {
-	
+		
 	@JT400Format(offset = 0, type = AS400DataType.TYPE_BIN4)
 	protected int bytesReturned;
 	
@@ -43,7 +43,7 @@ public class DEVD0100 implements IJT400Format {
 	
 	@JT400Format(offset = 101, length = 3)
 	protected String reserve;
-	
+		
 	public int getBytesReturned() {
 		return bytesReturned;
 	}

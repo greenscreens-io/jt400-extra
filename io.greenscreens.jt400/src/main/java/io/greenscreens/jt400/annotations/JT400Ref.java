@@ -15,8 +15,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import io.greenscreens.jt400.JT400RefType;
-
 /**
  * Annotation to define struct format or format field
  * NOTE: for base numeric types, length is not required
@@ -28,12 +26,12 @@ import io.greenscreens.jt400.JT400RefType;
 public @interface JT400Ref {
 
 	/**
-	 * Reference field type for array data
+	 * Reference to data length field
 	 */
-	JT400RefType type();
+	int length() default -1;
 		
 	/**
-	 * Byte array offset where reference data starts
+	 * Reference to data offset field
 	 */
 	int offset() default -1;
 }

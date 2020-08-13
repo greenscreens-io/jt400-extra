@@ -98,5 +98,15 @@ public class DEVD0300 extends DEVD0100 {
 	public void setLastActivity(String lastActivity) {
 		this.lastActivity = lastActivity;
 	}
-	
+
+	@Override
+	public String toString() {
+		return "DEVD0300 [remoteLocationName=" + remoteLocationName + ", controllerName=" + controllerName
+				+ ", jobName=" + jobName + ", userName=" + userName + ", jobNumber=" + jobNumber + ", queueName="
+				+ queueName + ", queueLibrary=" + queueLibrary + ", lastActivity=" + lastActivity + ", bytesReturned="
+				+ bytesReturned + ", bytesAvailable=" + bytesAvailable + ", date=" + date + ", time=" + time
+				+ ", deviceName=" + deviceName + ", deviceCategory=" + deviceCategory + ", onlineAtIPL=" + onlineAtIPL
+				+ ", description=" + description + ", reserve=" + reserve + "]";
+	}
+
 }

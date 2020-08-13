@@ -1,8 +1,8 @@
 /*
  * Copyright (C) 2015, 2020  Green Screens Ltd.
- *
+ * 
  * https://www.greenscreens.io
- *
+ * 
  */
 package io.greenscreens.jt400.annotations;
 
@@ -19,7 +19,7 @@ import java.lang.annotation.Target;
  * Annotation to define struct format or format field
  * NOTE: for base numeric types, length is not required
  * Only for strings or arrays
- *
+ * 
  * 
  * Examples defining date
  * 
@@ -53,7 +53,7 @@ import java.lang.annotation.Target;
  *	@JT400Format(offset = 4, type = AS400DataType.TYPE_BIN4, of = 51)
  *	protected int[] val;
  *
- *	Array of integers,
+ *	Array of integers, 
  *     array size at field marked with offset 40
  *     array starts at offset in field at 52
  *  @JT400Ref(offset = 52, length = 40)

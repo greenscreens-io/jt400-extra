@@ -39,7 +39,12 @@ public class DEVD0600 extends DEVD0100 {
 	public String toString() {
 		return "DEVD0600 [jobName=" + jobName + ", userName=" + userName + ", jobNumber=" + jobNumber
 				+ ", currentMessageQueue=" + currentMessageQueue + ", currentMessageQueueLibrary="
-				+ currentMessageQueueLibrary + ", ipAddress=" + ipAddress + "]";
+				+ currentMessageQueueLibrary + ", ipAddress=" + ipAddress + ", bytesReturned=" + bytesReturned
+				+ ", bytesAvailable=" + bytesAvailable + ", date=" + date + ", time=" + time + ", deviceName="
+				+ deviceName + ", deviceCategory=" + deviceCategory + ", onlineAtIPL=" + onlineAtIPL + ", description="
+				+ description + ", reserve=" + reserve + "]";
 	}
+	
+	
 
 }
