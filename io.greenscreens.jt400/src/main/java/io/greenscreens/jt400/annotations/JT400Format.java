@@ -41,7 +41,7 @@ import java.lang.annotation.Target;
  *
  * Examples defining arrays
  * 
- *	Array of string word 3 chars long, array size at field marked with offset 51
+ *	Array of string word 3 chars long, array size at field marked with offset of = 51
  *	@JT400Format(offset = 101, length = 3, of = 51)
  *	protected String[] val;
  * 
@@ -50,7 +50,15 @@ import java.lang.annotation.Target;
  *	protected int[] val;
  *  
  *	Array of integers, array size at field marked with offset 51
- *	@JT400Format(offset = 4, type = AS400DataType.TYPE_BIN4, of = 10)
+ *	@JT400Format(offset = 4, type = AS400DataType.TYPE_BIN4, of = 51)
+ *	protected int[] val;
+ *
+ *	Array of integers, 
+ *     array size at field marked with offset 40
+ *     array starts at offset in field at 52
+ *  @JT400Ref(offset = 52, type = JT400RefType.OFFSET)
+ *  @JT400Ref(offset = 40, type = JT400RefType.LENGTH)
+ *	@JT400Format(offset = 4, type = AS400DataType.TYPE_BIN4)
  *	protected int[] val;
  *  
  */

@@ -52,27 +52,6 @@ enum JT400ExtFormatBuilder {
 		
 		return obj;
 	}
-
-	/**
-	 * Set string value from received data format bytes
-	 * 
-	 * @param as400
-	 * @param obj
-	 * @param field
-	 * @param buffer
-	 * @throws Exception
-	 */
-	final static private <T extends IJT400Format> void setString(final AS400 as400, final T obj, final Field field, final ByteBuffer buffer) throws Exception {
-		
-		final JT400Format format = field.getAnnotation(JT400Format.class);
-		
-		final byte [] tmp = JT400ExtUtil.getBytesFrom(buffer, format.offset(), format.length());
-		
-		final Object value = JT400ExtBinaryConverter.asAS400Text(as400, field, format, tmp);
-
-		field.setAccessible(true);
-		field.set(obj, value);
-	}
 	
 	/**
 	 * 
@@ -108,7 +87,7 @@ enum JT400ExtFormatBuilder {
 		}
 
 	}
-	
+
 	/**
 	 * Set value from received data format bytes
 	 * 
@@ -128,6 +107,12 @@ enum JT400ExtFormatBuilder {
 			return;
 		}
 		
+		if (format.type() == AS400DataType.TYPE_STRUCTURE) {
+			setStructure(as400, obj, field, buffer);
+			return;
+		}
+	
+		
 		int len = getDataLength(format);
 		
 		if (len == 0) return;
@@ -143,6 +128,45 @@ enum JT400ExtFormatBuilder {
 			field.set(obj, value);
 		}
 	}
+
+	@SuppressWarnings("unchecked")
+	final static private <T extends IJT400Format> void setStructure(final AS400 as400, final T obj, final Field field, final ByteBuffer buffer) throws Exception {
+				
+		if (!IJT400Format.class.isAssignableFrom(field.getType())) {
+			return;
+		} 
+		
+		final JT400Format format = field.getAnnotation(JT400Format.class);
+		final ByteBuffer data = buffer.slice(format.offset(), getStructureLength(field));
+		final Class<? extends IJT400Format> clazz = (Class<? extends IJT400Format>) field.getType();
+		final Object value  = JT400ExtFormatBuilder.build(as400, clazz, data);
+
+		if (value != null) {
+			field.set(obj, value);
+		}
+	}
+
+	/**
+	 * Set string value from received data format bytes
+	 * 
+	 * @param as400
+	 * @param obj
+	 * @param field
+	 * @param buffer
+	 * @throws Exception
+	 */
+	final static private <T extends IJT400Format> void setString(final AS400 as400, final T obj, final Field field, final ByteBuffer buffer) throws Exception {
+		
+		final JT400Format format = field.getAnnotation(JT400Format.class);
+		
+		final byte [] tmp = JT400ExtUtil.getBytesFrom(buffer, format.offset(), format.length());
+		
+		final Object value = JT400ExtBinaryConverter.asAS400Text(as400, field, format, tmp);
+
+		field.setAccessible(true);
+		field.set(obj, value);
+	}
+	
 
 	/**
 	 * Get value from response buffer based on format structure
@@ -227,14 +251,7 @@ enum JT400ExtFormatBuilder {
 		case AS400DataType.TYPE_TEXT:
 			value = JT400ExtBinaryConverter.asAS400Text(as400, field, format, tmp);
 			break;
-			
-		case AS400DataType.TYPE_ARRAY:
-			// TODO array of elements 
-			break;
-		
-		case AS400DataType.TYPE_STRUCTURE:
-			// TODO another format to read
-			break;
+
 		default:
 			break;
 		}
@@ -256,6 +273,10 @@ enum JT400ExtFormatBuilder {
 			return format.length();
 		}
 		
+		if (format.type() == AS400DataType.TYPE_STRUCTURE) {
+			return getStructureLength(field);
+		}
+		
 		int len = getDataLength(format.type());
 		if (len == 0) {
 			len = format.length();
@@ -265,13 +286,28 @@ enum JT400ExtFormatBuilder {
 	}
 	
 	/**
+	 * Get data length for defined structure field
+	 * @param field
+	 * @return
+	 */
+	private static int getStructureLength(final Field field) {
+		
+		final JT400Format format = field.getType().getAnnotation(JT400Format.class);
+		if (format != null) {
+			return format.length();
+		}
+		
+		return 0;
+	}
+	
+	/**
 	 * Get byte length for standard data types
 	 * 
 	 * @param type
 	 * @return
 	 */
 	private static int getDataLength(final JT400Format format) {
-
+		
 		if (format.length() > 0) {
 			return format.length();
 		}
@@ -337,15 +373,18 @@ enum JT400ExtFormatBuilder {
 		
 		final Field [] fields = format.getDeclaredFields();
 		for (Field fld : fields) {
-			JT400Format fmt = fld.getAnnotation(JT400Format.class);
+			
+			final JT400Format fmt = fld.getAnnotation(JT400Format.class);
 			if (fmt == null) continue;
 			if (fmt.offset() != jtformat.of()) continue;
 			
 			final byte [] tmp = JT400ExtUtil.getBytesFrom(buffer, fmt.offset(), getDataLength(fmt));
 			final Object value = getValue(as400, fld, fmt, tmp);
+			
 			if (value != null) {
 				return (int) value;
 			}
+		
 			break;
 		}
 		
