@@ -73,21 +73,22 @@ public class Test {
 	 */
 	public static void main1() throws Exception {
 
+		final int maxSize = 2048;
+
 		final IQDCRDEVD program = IQDCRDEVD.create(as400);
-		
+
 		final QDCRDEVD params = QDCRDEVD.builder()
-				.withReceiver(ByteBuffer.allocate(2048))
-				.withLength(2048)
+				.withReceiver(ByteBuffer.allocate(maxSize))
+				.withLength(maxSize)
 				.withFormatName("DEVD1100")
 				.withDeviceName("HPAS400PRT")
 				.build();
-		
-		program.call(params);
-		
-		final String res = JT400ExtUtil.bytesToHex(params.getReceiver().array());		
-		System.out.println(res);
-		
-	}	
+
+		final DEVD1100 result1 = program.call(params, DEVD1100.class);
+
+		System.out.println(result1);
+
+	}
 
 	/**
 	 * Test whole call, display name must be active workstation session
@@ -98,9 +99,9 @@ public class Test {
 		final IQDCRDEVD program = IQDCRDEVD.create(as400);
 		final QDCRDEVD params = QDCRDEVD.build(DEVD0100.class, "QPADEV0001");
 		final DEVD0100 res = program.call(params, DEVD0100.class);
-		
+
 		System.out.println(res);
-		
-	}	
+
+	}
 
 }

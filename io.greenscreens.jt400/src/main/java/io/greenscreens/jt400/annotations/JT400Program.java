@@ -1,8 +1,8 @@
 /*
  * Copyright (C) 2015, 2020  Green Screens Ltd.
- * 
+ *
  * https://www.greenscreens.io
- * 
+ *
  */
 package io.greenscreens.jt400.annotations;
 
@@ -21,7 +21,7 @@ import io.greenscreens.jt400.interfaces.IJT400Format;
 @Retention(RUNTIME)
 @Target({ TYPE_PARAMETER, TYPE })
 public @interface JT400Program {
-    
+
 	String program();
 	String library();
 	int arguments();

@@ -1,8 +1,8 @@
 /*
  * Copyright (C) 2015, 2020  Green Screens Ltd.
- * 
+ *
  * https://www.greenscreens.io
- * 
+ *
  */
 package io.greenscreens.jt400;
 
@@ -52,19 +52,19 @@ enum JT400ExtBinaryConverter {
 	final static Object asAS400Bin1(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) {
 
 		Object value = null;
-		
+
 		final AS400Bin1 bin1 = new AS400Bin1();
-		
+
 		if (field.getType() == boolean.class) {
 			value = (byte) bin1.toByte(tmp) == 1;
-		} else if (field.getType() == Boolean.class) {				
+		} else if (field.getType() == Boolean.class) {
 			value = Boolean.valueOf(bin1.toByte(tmp) == 1);
 		} else if (field.getType() == byte.class) {
 			value = bin1.toByte(tmp);
 		} else if (field.getType() == Byte.class) {
-			value = bin1.toObject(tmp);				
+			value = bin1.toObject(tmp);
 		} else throw new RuntimeException("Boolean, boolean, Byte or byte type supported for AS400Bin1");
-		
+
 		return value;
 	}
 
@@ -83,7 +83,7 @@ enum JT400ExtBinaryConverter {
 
 		final AS400Bin2 bin2 = new AS400Bin2();
 		if (field.getType() == short.class) {
-			value = bin2.toShort(tmp);			
+			value = bin2.toShort(tmp);
 		} else if (field.getType() == Short.class) {
 			value = bin2.toObject(tmp);
 		} else throw new RuntimeException("Short or short type supported for AS400Bin2");
@@ -106,7 +106,7 @@ enum JT400ExtBinaryConverter {
 
 		final AS400Bin4 bin4 = new AS400Bin4();
 		if (field.getType() == int.class) {
-			value = bin4.toInt(tmp);			
+			value = bin4.toInt(tmp);
 		} else if (field.getType() == Integer.class) {
 			value = bin4.toObject(tmp);
 		} else throw new RuntimeException("Integer or int type supported for AS400Bin4");
@@ -129,14 +129,14 @@ enum JT400ExtBinaryConverter {
 
 		final AS400Bin8 bin8 = new AS400Bin8();
 		if (field.getType() == long.class) {
-			value = bin8.toLong(tmp);			
+			value = bin8.toLong(tmp);
 		} else if (field.getType() == Long.class) {
 			value = bin8.toObject(tmp);
 		} else throw new RuntimeException("Long or long type supported for AS400UnsignedBin1");
 
 		return value;
 	}
-	
+
 	/**
 	 * Convert byte data from AS400UBin1
 	 * @param as400
@@ -154,7 +154,7 @@ enum JT400ExtBinaryConverter {
 		if (field.getType() == short.class) {
 			value = ubin1.toShort(tmp);
 		} else if (field.getType() == Short.class) {
-			value = ubin1.toObject(tmp);				
+			value = ubin1.toObject(tmp);
 		} else throw new RuntimeException("Short or short type supported for AS400UnsignedBin1");
 
 		return value;
@@ -175,10 +175,10 @@ enum JT400ExtBinaryConverter {
 
 		final AS400UnsignedBin2 ubin2 = new AS400UnsignedBin2();
 		if (field.getType() == int.class) {
-			value = ubin2.toInt(tmp);			
+			value = ubin2.toInt(tmp);
 		} else if (field.getType() == Integer.class) {
 			value = ubin2.toObject(tmp);
-		} else throw new RuntimeException("Integer or int type supported for AS400UnsignedBin2");			
+		} else throw new RuntimeException("Integer or int type supported for AS400UnsignedBin2");
 
 		return value;
 	}
@@ -198,7 +198,7 @@ enum JT400ExtBinaryConverter {
 
 		final AS400UnsignedBin4 ubin4 = new AS400UnsignedBin4();
 		if (field.getType() == long.class) {
-			value = ubin4.toLong(tmp);			
+			value = ubin4.toLong(tmp);
 		} else if (field.getType() == Long.class) {
 			value = ubin4.toObject(tmp);
 		} else throw new RuntimeException("Long or long type supported for AS400UnsignedBin4");
@@ -219,10 +219,10 @@ enum JT400ExtBinaryConverter {
 
 		Object value = null;
 
-		final AS400UnsignedBin8 ubin8 = new AS400UnsignedBin8();		
+		final AS400UnsignedBin8 ubin8 = new AS400UnsignedBin8();
 		if (field.getType() == BigInteger.class) {
 			value = ubin8.toBigInteger(tmp);
-		} else throw new RuntimeException("BigInteger type supported for AS400UnsignedBin8");	
+		} else throw new RuntimeException("BigInteger type supported for AS400UnsignedBin8");
 
 		return value;
 	}
@@ -242,14 +242,14 @@ enum JT400ExtBinaryConverter {
 
 		final AS400Float4 float4 = new AS400Float4();
 		if (field.getType() == float.class) {
-			value = float4.toFloat(tmp);			
+			value = float4.toFloat(tmp);
 		} else if (field.getType() == Float.class) {
 			value = float4.toObject(tmp);
-		} else throw new RuntimeException("Float or float type supported for AS400Float4");			
-		
+		} else throw new RuntimeException("Float or float type supported for AS400Float4");
+
 		return value;
 	}
-	
+
 	/**
 	 * Convert byte data from AS400Float8
 	 * @param as400
@@ -265,16 +265,16 @@ enum JT400ExtBinaryConverter {
 
 		final AS400Float8 float8 = new AS400Float8();
 		if (field.getType() == double.class) {
-			value = float8.toDouble(tmp);			
+			value = float8.toDouble(tmp);
 		} else if (field.getType() == Double.class) {
 			value = float8.toObject(tmp);
-		} else throw new RuntimeException("Double or double type supported for AS400Float8");			
-		
+		} else throw new RuntimeException("Double or double type supported for AS400Float8");
+
 		return value;
 	}
 
 	/**
-	 * 
+	 *
 	 * @param as400
 	 * @param field
 	 * @param format
@@ -293,13 +293,13 @@ enum JT400ExtBinaryConverter {
 			value = Double.valueOf(decFloat.toDouble(tmp));
 		} else if (field.getType() == BigDecimal.class) {
 			value = decFloat.toObject(tmp);
-		} else throw new RuntimeException("BigDecimal, Double or double type supported for AS400DecFloat");			
-		
+		} else throw new RuntimeException("BigDecimal, Double or double type supported for AS400DecFloat");
+
 		return value;
 	}
 
 	/**
-	 * 
+	 *
 	 * @param as400
 	 * @param field
 	 * @param format
@@ -310,8 +310,8 @@ enum JT400ExtBinaryConverter {
 	final static Object asAS400ZonedDecimal(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) {
 
 		Object value = null;
-		
-		final AS400ZonedDecimal zoned = new AS400ZonedDecimal(format.length(), format.decimals());			
+
+		final AS400ZonedDecimal zoned = new AS400ZonedDecimal(format.length(), format.decimals());
 		if (field.getType() == double.class) {
 			value = zoned.toDouble(tmp);
 		} else if (field.getType() == Double.class) {
@@ -321,12 +321,12 @@ enum JT400ExtBinaryConverter {
 			zoned.setUseDouble(false);
 			value = zoned.toObject(tmp);
 		} else throw new RuntimeException("BigDecimal, Double or double type supported for AS400ZonedDecimal");
-		
+
 		return value;
 	}
 
 	/**
-	 * 
+	 *
 	 * @param as400
 	 * @param field
 	 * @param format
@@ -337,10 +337,10 @@ enum JT400ExtBinaryConverter {
 	final static Object asAS400PackedDecimal(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) {
 
 		Object value = null;
-		
-		final AS400PackedDecimal packed = new AS400PackedDecimal(format.length(), format.decimals());			
+
+		final AS400PackedDecimal packed = new AS400PackedDecimal(format.length(), format.decimals());
 		if (field.getType() == double.class) {
-			value = packed.toDouble(tmp);			
+			value = packed.toDouble(tmp);
 		} else if (field.getType() == Double.class) {
 			packed.setUseDouble(true);
 			value = packed.toObject(tmp);
@@ -348,12 +348,12 @@ enum JT400ExtBinaryConverter {
 			packed.setUseDouble(false);
 			value = packed.toObject(tmp);
 		} else throw new RuntimeException("BigDecimal, Double or double type supported for AS400PackedDecimal");
-		
+
 		return value;
 	}
 
 	/**
-	 * 
+	 *
 	 * @param as400
 	 * @param field
 	 * @param format
@@ -364,18 +364,18 @@ enum JT400ExtBinaryConverter {
 	final static Object asAS400Date(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp)  throws Exception {
 
 		Object value = null;
-		
+
 		if (field.getType() == Date.class) {
 			//char sep = getDateSeparator(format.format());
 			final AS400Date date = new AS400Date(as400.getTimeZone(), format.format());
-			value = date.toObject(tmp);		
+			value = date.toObject(tmp);
 		} else throw new RuntimeException("Date type supported for AS400Date");
-		
+
 		return value;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param as400
 	 * @param field
 	 * @param format
@@ -386,17 +386,17 @@ enum JT400ExtBinaryConverter {
 	final static Object asAS400Time(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp)  throws Exception {
 
 		Object value = null;
-		
+
 		if (field.getType() == Time.class) {
 			final AS400Time time = new AS400Time(as400.getTimeZone(), format.format());
-			value = time.toObject(tmp);			
+			value = time.toObject(tmp);
 		} else throw new RuntimeException("Time type supported for AS400Time");
-		
+
 		return value;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param as400
 	 * @param field
 	 * @param format
@@ -407,17 +407,17 @@ enum JT400ExtBinaryConverter {
 	final static Object asAS400Timestamp(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) throws Exception {
 
 		Object value = null;
-		
+
 		if (field.getType() == Timestamp.class) {
 			final AS400Timestamp timestamp = new AS400Timestamp(as400.getTimeZone());
 			value = timestamp.toObject(tmp);
 		} else throw new RuntimeException("Timestamp type supported for AS400Timestamp");
-		
+
 		return value;
 	}
 
 	/**
-	 * 
+	 *
 	 * @param as400
 	 * @param field
 	 * @param format
@@ -425,14 +425,14 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 * @throws Exception
 	 */
-	final static Object asAS400Text(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) {		
-		final AS400Text text = new AS400Text(format.length(), as400); 		
+	final static Object asAS400Text(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) {
+		final AS400Text text = new AS400Text(format.length(), as400);
 		final String value = ((String)(text.toObject(tmp))).trim();
 		return value;
 	}
 
 	static char getDateSeparator(final int type) {
-		
+
 		switch (type) {
 		case AS400Date.FORMAT_CDMY:
 		case AS400Date.FORMAT_CMDY:
@@ -456,7 +456,7 @@ enum JT400ExtBinaryConverter {
 		default:
 			return ' ';
 		}
-	
+
 	}
 
 }

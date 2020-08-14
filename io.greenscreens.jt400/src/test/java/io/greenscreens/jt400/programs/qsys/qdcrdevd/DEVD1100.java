@@ -1,4 +1,10 @@
-package io.greenscreens.jt400.programs.qsys.qdcrdevd;
+/*
+ * Copyright (C) 2015, 2020  Green Screens Ltd.
+ *
+ * https://www.greenscreens.io
+ *
+ */
+ package io.greenscreens.jt400.programs.qsys.qdcrdevd;
 
 import java.util.Arrays;
 
@@ -44,7 +50,7 @@ public class DEVD1100 extends DEVD0100 {
 	// Number of publishing list entries
 	@JT400Format(offset = 1524, type = AS400DataType.TYPE_BIN4)
 	protected int lengthPubInfo;
-		
+
 	@JT400Ref(offset = 920, length = 924)
 	@JT400Format(type = AS400DataType.TYPE_STRUCTURE, offset = -1)
 	Data_10_2 [] switchedLineName;
@@ -56,7 +62,7 @@ public class DEVD1100 extends DEVD0100 {
 	@JT400Ref(offset = 976, length = 980)
 	@JT400Format(type = AS400DataType.TYPE_STRUCTURE, offset = -3)
 	Data_10_2 [] dataStreamSupp;
-	
+
 	@JT400Ref(offset = 1520, length = 1524)
 	@JT400Format(type = AS400DataType.TYPE_STRUCTURE, offset = -4)
 	DEVD1101PubEntry [] publishingEntry;
@@ -74,5 +80,5 @@ public class DEVD1100 extends DEVD0100 {
 				+ ", deviceCategory=" + deviceCategory + ", onlineAtIPL=" + onlineAtIPL + ", description=" + description
 				+ ", reserve=" + reserve + "]";
 	}
-		
+
 }

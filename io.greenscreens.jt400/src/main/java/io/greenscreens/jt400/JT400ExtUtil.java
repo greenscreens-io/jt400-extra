@@ -1,8 +1,8 @@
 /*
  * Copyright (C) 2015, 2020  Green Screens Ltd.
- * 
+ *
  * https://www.greenscreens.io
- * 
+ *
  */
 package io.greenscreens.jt400;
 
@@ -28,7 +28,7 @@ import io.greenscreens.jt400.interfaces.IJT400Params;
  */
 public enum JT400ExtUtil {
 ;
-	
+
 	/**
 	 * Generic JT400 program call
 	 * @param as400
@@ -38,31 +38,31 @@ public enum JT400ExtUtil {
 	 * @throws Exception
 	 */
 	static public ProgramCall call(final AS400 as400, final String program, final ProgramParameter[] parameters) throws Exception {
-		
+
 		if (as400 == null) {
 			throw new RuntimeException("Not all definitions available!");
 		}
-		
-		final ProgramCall programCall = new ProgramCall(as400);		
+
+		final ProgramCall programCall = new ProgramCall(as400);
 		programCall.setProgram(program, parameters);
-		
-		if (!programCall.run()) {			
+
+		if (!programCall.run()) {
 			throw new JT400Exception(programCall.getMessageList());
 		}
-				
+
 		return programCall;
 	}
 
 	/**
-	 * Get length of provided data format 
+	 * Get length of provided data format
 	 * @param <T>
 	 * @param format
 	 * @return
 	 */
-	public static <T extends IJT400Format> int getFormatLength(final Class<T> format) {		
+	public static <T extends IJT400Format> int getFormatLength(final Class<T> format) {
 		final JT400Format fmt = format.getAnnotation(JT400Format.class);
 		if (fmt == null) return 0;
-		return fmt.length();		
+		return fmt.length();
 	}
 
 	/**
@@ -72,17 +72,17 @@ public enum JT400ExtUtil {
 	 * @param len
 	 * @return
 	 */
-	final static public byte[] getBytesFrom(final ByteBuffer buffer, final int position, final int len) {		
+	final static public byte[] getBytesFrom(final ByteBuffer buffer, final int position, final int len) {
 		final byte [] data = new byte[len];
 		buffer.rewind();
 		buffer.position(position);
 		buffer.get(data);
 		return data;
-	} 
-	
+	}
+
 	/**
 	 * Check if defined JT400Params contains requested supported dat output format
-	 * 
+	 *
 	 * @param format
 	 * @param params
 	 * @return
@@ -90,7 +90,7 @@ public enum JT400ExtUtil {
 	public static <T extends IJT400Format, K extends IJT400Params> boolean contains(Class<T> format, final Class<K> params) {
 
 		final Class<? extends IJT400Format>[] formats = params.getAnnotation(JT400Program.class).formats();
-		
+
 		for (Class<? extends IJT400Format> item : formats) {
 			if (item == format) {
 				return true;
@@ -99,7 +99,7 @@ public enum JT400ExtUtil {
 
 		return false;
 	}
-	
+
 
 	/**
 	 * Print JT400 errors to defined logger
@@ -108,9 +108,9 @@ public enum JT400ExtUtil {
 	static public void printErrors(final AS400Message [] messages, final Logger logger) {
 		for (AS400Message message : messages) {
 			logger.warning(String.format(" %s : %s", message.getID(), message.getText()));
-		}		
+		}
 	}
-	
+
 	/**
 	 * Print JT400 errors to defined output stream
 	 * @param messages
@@ -121,7 +121,7 @@ public enum JT400ExtUtil {
 			for (AS400Message message : messages) {
 				byte [] bytes = String.format(" %s : %s\n", message.getID(), message.getText()).getBytes();
 				stream.write(bytes);
-			}			
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -137,7 +137,7 @@ public enum JT400ExtUtil {
 			for (AS400Message message : messages) {
 				String line = String.format(" %s : %s\n", message.getID(), message.getText());
 				writer.write(line);
-			}			
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -171,34 +171,35 @@ public enum JT400ExtUtil {
 	 * @return
 	 */
 	public static String bytesToHex(byte[] bytes) {
-	    
+
 		final byte[] hexChars = new byte[bytes.length * 2];
-	    
+
 		for (int j = 0; j < bytes.length; j++) {
-	        int v = bytes[j] & 0xFF;
-	        hexChars[j * 2] = HEX_ARRAY[v >>> 4];
-	        hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
-	    }
-	    
+			int v = bytes[j] & 0xFF;
+			hexChars[j * 2] = HEX_ARRAY[v >>> 4];
+			hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
+		}
+
 		return new String(hexChars, StandardCharsets.UTF_8);
 	}
-	
+
 	/**
 	 * Convert hex string to byte array
 	 * @param s
 	 * @return
 	 */
 	public static byte[] hexToBytes(final String s) {
-	 
+
 		final int len = s.length();
-	    
+
 		final byte[] data = new byte[len / 2];
-	    
+
 		for (int i = 0; i < len; i += 2) {
-	        data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
-	                             + Character.digit(s.charAt(i+1), 16));
-	    }
-	    
+			data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+				+ Character.digit(s.charAt(i+1), 16));
+		}
+
 		return data;
 	}
+	
 }

@@ -1,8 +1,8 @@
 /*
  * Copyright (C) 2015, 2020  Green Screens Ltd.
- * 
+ *
  * https://www.greenscreens.io
- * 
+ *
  */
 package io.greenscreens.jt400;
 
@@ -17,31 +17,31 @@ import io.greenscreens.jt400.annotations.Output;
 import io.greenscreens.jt400.interfaces.IJT400Params;
 
 /**
- * Response builder populate JT400 ProgramParameter of type output 
+ * Response builder populate JT400 ProgramParameter of type output
  * with received values.
  */
 enum JT400ExtResponseBuilder {
 ;
 
 	/**
-	 * 
+	 *
 	 * @param programCall
 	 * @param params
 	 * @param format
 	 * @param args
 	 * @return
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	final static public <K extends IJT400Params> void build(final ProgramCall programCall, final K params, final Class<K> args) throws Exception {
-		
+
 		final ProgramParameter[] argList = programCall.getParameterList();
 		final Field[] fields = args.getDeclaredFields();
-		
+
 		if (argList == null) return;
-		
+
 		Output output = null;
 		Id arg = null;
-				
+
 		for (Field field : fields) {
 			arg = field.getAnnotation(Id.class);
 			output = field.getAnnotation(Output.class);
@@ -50,11 +50,11 @@ enum JT400ExtResponseBuilder {
 			build(programCall, params, args, field);
 			break;
 		}
-		
+
 	}
 
 	/**
-	 * 
+	 *
 	 * @param programCall
 	 * @param params
 	 * @param args
@@ -62,7 +62,7 @@ enum JT400ExtResponseBuilder {
 	 * @throws Exception
 	 */
 	final static public <K extends IJT400Params> void build(final ProgramCall programCall, final K params, final Class<K> args, final Field field) throws Exception {
-		
+
 		final Id id = field.getAnnotation(Id.class);
 		// final JT400Argument ann = field.getAnnotation(JT400Argument.class);
 		final ProgramParameter[] argList = programCall.getParameterList();
@@ -70,11 +70,11 @@ enum JT400ExtResponseBuilder {
 		if (argList.length < id.value()) {
 			throw new RuntimeException("Argument length invalid");
 		}
-		
+
 		final byte[] response = argList[id.value()].getOutputData();
 
 		if (response == null) return;
-		
+
 		field.setAccessible(true);
 
 		if (field.getType() == ByteBuffer.class) {
@@ -86,10 +86,11 @@ enum JT400ExtResponseBuilder {
 				data.put(response);
 			}
 		}
-		
-		if (field.getType() == byte[].class) { 
+
+		if (field.getType() == byte[].class) {
 			field.set(params, response);
 		}
-				
+
 	}
+
 }

@@ -1,4 +1,10 @@
-package io.greenscreens.jt400.programs.qsys.qdcrdevd;
+/*
+ * Copyright (C) 2015, 2020  Green Screens Ltd.
+ *
+ * https://www.greenscreens.io
+ *
+ */
+ package io.greenscreens.jt400.programs.qsys.qdcrdevd;
 
 import com.ibm.as400.access.AS400DataType;
 import io.greenscreens.jt400.annotations.JT400Format;

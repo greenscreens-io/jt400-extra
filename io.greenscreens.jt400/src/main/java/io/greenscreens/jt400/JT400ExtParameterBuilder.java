@@ -1,8 +1,8 @@
 /*
  * Copyright (C) 2015, 2020  Green Screens Ltd.
- * 
+ *
  * https://www.greenscreens.io
- * 
+ *
  */
 package io.greenscreens.jt400;
 
@@ -43,8 +43,8 @@ import io.greenscreens.jt400.annotations.Output;
 import io.greenscreens.jt400.interfaces.IJT400Params;
 
 /**
- * Builder to generate ProgramCall parameters from 
- * defined annotated Java class structure 
+ * Builder to generate ProgramCall parameters from
+ * defined annotated Java class structure
  */
 enum JT400ExtParameterBuilder {
 ;
@@ -52,7 +52,7 @@ enum JT400ExtParameterBuilder {
 	private static final Logger LOG = LoggerFactory.getLogger(JT400ExtParameterBuilder.class);
 
 	/**
-	 * 
+	 *
 	 * @param as400
 	 * @param obj
 	 * @return
@@ -62,42 +62,42 @@ enum JT400ExtParameterBuilder {
 		final Class<K> type = (Class<K>) obj.getClass();
 		return build(as400, obj, type);
 	}
-	
+
 	/**
 	 * Convert JT400Params annotated class definition into JT400 ProrgamParameter list
-	 * 
+	 *
 	 * @param as400
 	 * @param obj
 	 * @param type
 	 * @return
 	 */
 	final static public <K extends IJT400Params> ProgramParameter[] build(final AS400 as400, final K obj, final Class<K> type) {
-		
+
 		final int size = JT400ExtParameterBuilder.count(type);
 		final Field[] fields = type.getDeclaredFields();
-		
+
 		final ProgramParameter [] list = new ProgramParameter[size];
 
 		Id id = null;
-		
+
 		for (Field field : fields) {
-			
+
 			id = field.getAnnotation(Id.class);
-			
+
 			if (id == null) continue;
-									
+
 			final ProgramParameter parm = build(as400, obj, field);
 			if (parm != null) {
-				list[id.value()] = parm;			
+				list[id.value()] = parm;
 			}
 		}
-		
+
 		return list;
 	}
 
 	/**
 	 * Build a single parameter definition based on provided param descriptor class
-	 * 
+	 *
 	 * @param as400
 	 * @param obj
 	 * @param field
@@ -105,25 +105,24 @@ enum JT400ExtParameterBuilder {
 	 * @return
 	 */
 	final static private <K extends IJT400Params> ProgramParameter build(final AS400 as400, final K obj, final Field field) {
-		
+
 		ProgramParameter parameter = null;
-		
+
 		try {
 			parameter = buildAnnotated(as400, obj, field);
 			if (parameter == null) {
-				parameter = buildAuto(as400, obj, field);	
+				parameter = buildAuto(as400, obj, field);
 			}
 		} catch (Exception e) {
 			LOG.error(e.getMessage());
 			LOG.debug(e.getMessage(), e);
 		}
-		
+
 		return parameter;
 	}
-	
+
 	/**
-	 * 
-	 * 
+	 *
 	 * @param as400
 	 * @param obj
 	 * @param field
@@ -131,16 +130,16 @@ enum JT400ExtParameterBuilder {
 	 * @throws Exception
 	 */
 	final static private <K extends IJT400Params> ProgramParameter buildAnnotated(final AS400 as400, final K obj, final Field field) throws Exception {
-		
+
 		final Input input = field.getAnnotation(Input.class);
 		final Output output = field.getAnnotation(Output.class);
 		final JT400Argument ann = field.getAnnotation(JT400Argument.class);
 
 		if (ann == null) return null;
-				
+
 		Object val = null;
 		AS400DataType dataType = null;
-				
+
 		switch (ann.type()) {
 		case AS400DataType.TYPE_BIN1:
 			if (input != null) {
@@ -246,9 +245,9 @@ enum JT400ExtParameterBuilder {
 			dataType = new AS400Timestamp();
 			break;
 		case AS400DataType.TYPE_BYTE_ARRAY:
-			
+
 			int lena = ann.length();
-			
+
 			if (field.getType() == ByteBuffer.class) {
 				ByteBuffer data = getFieldValue(obj, field);
 				if (data == null) data = ByteBuffer.allocate(ann.length());
@@ -259,8 +258,8 @@ enum JT400ExtParameterBuilder {
 				if (data == null) data = new byte[ann.length()];
 				val = data;
 				lena = data.length;
-			}	
-			
+			}
+
 			dataType = new AS400ByteArray(lena);
 			break;
 		case AS400DataType.TYPE_TEXT:
@@ -272,34 +271,26 @@ enum JT400ExtParameterBuilder {
 			}
 			dataType = new AS400Text(len, as400);
 			break;
-		case AS400DataType.TYPE_ARRAY:
-			// TODO array of types 
-			//final int lena = ann == null ? txt.length() : ann.length();
-			//dataType = new AS400ByteArray(lena);
-			val = null;
-			break;
-		case AS400DataType.TYPE_STRUCTURE:
-			// TODO another IJT400Params type structure
-			break;
+
 		default:
 			break;
 		}
-		
+
 		if (dataType == null) {
 			return null;
 		}
-		
+
 		final boolean isInputData = input != null && val != null;
 		final boolean isInputOnly = input != null && output == null;
 		final boolean isOutputOnly = output != null && input == null;
 		final boolean isInputOutput = output != null && input != null;
-						
+
 		final ProgramParameter parameter = new ProgramParameter();
 
 		if (isOutputOnly) {
 			parameter.setOutputDataLength(dataType.getByteLength());
 		}
-	
+
 		if (isInputOnly) {
 			if (isInputData) {
 				parameter.setInputData(dataType.toBytes(val));
@@ -311,13 +302,13 @@ enum JT400ExtParameterBuilder {
 			parameter.setInputData(data);
 			parameter.setOutputDataLength(16 + ann.length());
 		}
-				
+
 		return parameter;
 	}
 
 	/**
 	 * Not used for now
-	 * 
+	 *
 	 * @param as400
 	 * @param obj
 	 * @param field
@@ -327,41 +318,41 @@ enum JT400ExtParameterBuilder {
 	final static private <K extends IJT400Params> ProgramParameter buildAuto(final AS400 as400, final K obj, final Field field) throws Exception {
 		return null;
 	}
-	
+
 	/**
-	 * Detect number of arguments. First try to take from annotation, if not found, 
+	 * Detect number of arguments. First try to take from annotation, if not found,
 	 * try to detect size by last order value on field annotation
-	 * 
+	 *
 	 * @param type
 	 * @return
 	 */
 	final static private <K extends IJT400Params> int count(final Class<K> type) {
-		
+
 		final JT400Program pgm = type.getAnnotation(JT400Program.class);
-		
+
 		if (pgm != null) return pgm.arguments();
-		
+
 		int order = 0;
 		Id id = null;
-		
+
 		final Field[] fields = type.getFields();
-		
-		for (Field field : fields) {			
-		
+
+		for (Field field : fields) {
+
 			id = field.getAnnotation(Id.class);
-			
+
 			if (id != null) {
 				order = Math.max(order, id.value());
 			}
-			
+
 		}
-		
+
 		return order;
 	}
-	
+
 	/**
 	 * Generic field get value
-	 * 
+	 *
 	 * @param obj
 	 * @param field
 	 * @param def
@@ -369,24 +360,24 @@ enum JT400ExtParameterBuilder {
 	 */
 	@SuppressWarnings("unchecked")
 	final static private <T> T getFieldValue(final Object obj, final Field field, final T def) {
-		
+
 		if (obj == null) return def;
-		
+
 		try {
-			field.setAccessible(true);			
+			field.setAccessible(true);
 			T val = (T) field.get(obj);
 			if (val != null) return val;
 		} catch (Exception e) {
 			LOG.error(e.getMessage());
 			LOG.debug(e.getMessage(), e);
 		}
-		
-		return def;		
+
+		return def;
 	}
-	
+
 	/**
-	 * 
-	 * 
+	 *
+	 *
 	 * @param obj
 	 * @param field
 	 * @return
@@ -394,4 +385,5 @@ enum JT400ExtParameterBuilder {
 	final static private <T> T getFieldValue(final Object obj, final Field field) {
 		return getFieldValue(obj, field, null);
 	}
+
 }

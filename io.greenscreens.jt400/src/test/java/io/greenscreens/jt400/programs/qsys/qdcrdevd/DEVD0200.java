@@ -1,4 +1,10 @@
-package io.greenscreens.jt400.programs.qsys.qdcrdevd;
+/*
+ * Copyright (C) 2015, 2020  Green Screens Ltd.
+ *
+ * https://www.greenscreens.io
+ *
+ */
+ package io.greenscreens.jt400.programs.qsys.qdcrdevd;
 
 import com.ibm.as400.access.AS400DataType;
 
@@ -40,7 +46,7 @@ public class DEVD0200 extends DEVD0100 {
 	@JT400Format(type = AS400DataType.TYPE_STRUCTURE)
 	Data_10_2 [] modes;
 
-	// These fields repeat for each active mode 
+	// These fields repeat for each active mode
 	@JT400Ref(length = 260, offset = 256)
 	@JT400Format(type = AS400DataType.TYPE_STRUCTURE)
 	DEVD0200ModesActive []  modesActive;

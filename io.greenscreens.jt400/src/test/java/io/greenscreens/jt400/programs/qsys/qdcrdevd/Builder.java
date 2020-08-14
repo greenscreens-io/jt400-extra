@@ -1,8 +1,8 @@
 /*
  * Copyright (C) 2015, 2020  Green Screens Ltd.
- * 
+ *
  * https://www.greenscreens.io
- * 
+ *
  */
 package io.greenscreens.jt400.programs.qsys.qdcrdevd;
 
@@ -55,18 +55,18 @@ public class Builder {
 
 	/**
 	 * Helper method as only relevant args are format and display name.
-	 * Also, validate proper format is provided 
+	 * Also, validate proper format is provided
 	 * @param <T>
 	 * @param clazz
 	 * @param displayName
 	 * @return
 	 */
 	public static <T extends IJT400Format> QDCRDEVD build(Class<T> clazz, final String displayName) {
-		
+
 		if (!JT400ExtUtil.contains(clazz, QDCRDEVD.class)) {
 			throw new RuntimeException("Format not supported by parameter definition!");
 		}
-		
+
 		final int len = JT400ExtUtil.getFormatLength(clazz);
 
 		return QDCRDEVD.builder()

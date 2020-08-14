@@ -1,8 +1,8 @@
 /*
  * Copyright (C) 2015, 2020  Green Screens Ltd.
- * 
+ *
  * https://www.greenscreens.io
- * 
+ *
  */
 package io.greenscreens.jt400;
 
@@ -23,14 +23,14 @@ import io.greenscreens.jt400.interfaces.IJT400Program;
 /**
  * JT400Extra factory class to wrap JT400Program interface,
  * to build ProgramCall argument list from definition class,
- * or to build format object from byte array response  
+ * or to build format object from byte array response
  */
 public enum JT400ExtFactory {
-	;
-	
+;
+
 	/**
 	 * Build format from response bytes based on JT400Format structure
-	 * 
+	 *
 	 * @param as400
 	 * @param format
 	 * @param data
@@ -40,10 +40,10 @@ public enum JT400ExtFactory {
 	final static public <T extends IJT400Format> T build(final AS400 as400, final Class<T> format, final ByteBuffer data) throws Exception {
 		return JT400ExtFormatBuilder.build(as400, format, data);
 	}
-	
+
 	/**
 	 * Build ProgramCall parameters from instance
-	 * 
+	 *
 	 * @param as400
 	 * @param obj
 	 * @return
@@ -51,10 +51,10 @@ public enum JT400ExtFactory {
 	final static public <K extends IJT400Params> ProgramParameter[] build(final AS400 as400, final K obj) {
 		return JT400ExtParameterBuilder.build(as400, obj);
 	}
-	
+
 	/**
 	 * Create Proxy Instance from interface implementing IJT400Program
-	 * 
+	 *
 	 * @param caller
 	 * @param input
 	 * @param library
@@ -67,25 +67,25 @@ public enum JT400ExtFactory {
 
 	/**
 	 * Create Proxy Instance from interface implementing IJT400Program
-	 * 
+	 *
 	 * @param as400
 	 * @param caller
 	 * @param input
 	 * @return
 	 */
 	final static public <I extends IJT400Params, T> IJT400Program<I> create(final AS400 as400, final Class<T> caller, final Class<I> input) {
-		
+
 		final JT400Program pgm = input.getAnnotation(JT400Program.class);
 		if (pgm == null) {
 			throw new RuntimeException("Program not defined!");
 		}
-		
-		return create(as400, caller, input, pgm.library(), pgm.program());		
+
+		return create(as400, caller, input, pgm.library(), pgm.program());
 	}
-	
+
 	/**
 	 * Create Proxy Instance from interface implementing IJT400Program
-	 * 
+	 *
 	 * @param as400
 	 * @param caller
 	 * @param input
@@ -97,19 +97,19 @@ public enum JT400ExtFactory {
 	final static public <I extends IJT400Params, P extends IJT400Program<I>, T> P create(final AS400 as400, final Class<T> caller, final Class<I> input, final String library, final String program) {
 
 		final JT400ExtInvocationHandler<I> handler = new JT400ExtInvocationHandler<I>(as400, input, library, program);
-		
+
 		final Object instance = Proxy.newProxyInstance(
-				  IJT400Program.class.getClassLoader(), 
+				  IJT400Program.class.getClassLoader(),
 				  new Class<?> [] {caller},
 				  handler);
-		
+
 		return (P) instance;
 
 	}
 
 	/**
 	 * Create Proxy Instance from interface implementing IJT400Program
-	 * 
+	 *
 	 * @param program
 	 * @return
 	 */
@@ -119,16 +119,16 @@ public enum JT400ExtFactory {
 
 	/**
 	 * Create Proxy Instance from interface implementing IJT400Program
-	 * 
+	 *
 	 * @param AS400
 	 * @param caller
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")	
+	@SuppressWarnings("unchecked")
 	final static public <T extends IJT400Program<? extends IJT400Params>> T create(final AS400 as400, final Class<T> caller) {
-	
+
 		Class<? extends IJT400Params> input = null;
-		
+
 		final AnnotatedType[] intfs = caller.getAnnotatedInterfaces();
 		if (intfs != null) {
 			for (AnnotatedType intf : intfs) {
@@ -136,18 +136,18 @@ public enum JT400ExtFactory {
 				if (type instanceof ParameterizedType) {
 					final Type [] pTypes = ((ParameterizedType) type).getActualTypeArguments();
 					for (Type pType : pTypes) {
-						
+
 						if (IJT400Params.class.isAssignableFrom((Class<?>) pType)) {
 							input = (Class<? extends IJT400Params>) pType;
 							break;
 						}
-						
+
 					}
-				} 
-				
+				}
+
 			}
 		}
-		
+
 		return (T) create(as400, caller, input);
 	}
 
