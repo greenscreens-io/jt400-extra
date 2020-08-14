@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import com.ibm.as400.access.AS400;
@@ -100,10 +101,8 @@ enum JT400ExtFormatBuilder {
 			i++;
 		}
 				
-		if (list != null) {
-			field.set(obj, list);
-		}
-
+		setField(field, obj, list);
+		
 	}
 
 	/**
@@ -131,17 +130,14 @@ enum JT400ExtFormatBuilder {
 		if (buffer.limit() < format.offset() + len) {
 			return;
 		}
-
-		field.setAccessible(true);
 		
 		Object value = null;
 		final byte [] tmp = JT400ExtUtil.getBytesFrom(buffer, format.offset(), len);
 		
 		value = getValue(as400, fields, field, format, tmp);
 		
-		if (value != null) {
-			field.set(obj, value);
-		}
+		setField(field, obj, value);
+
 	}
 
 	/**
@@ -170,9 +166,8 @@ enum JT400ExtFormatBuilder {
 		final Class<? extends IJT400Format> clazz = (Class<? extends IJT400Format>) field.getType();
 		final Object value  = JT400ExtFormatBuilder.build(as400, clazz, data);
 
-		if (value != null) {
-			field.set(obj, value);
-		}
+		setField(field, obj, value);
+
 	}
 
 	/**
@@ -422,9 +417,21 @@ enum JT400ExtFormatBuilder {
 	 */
 	final static private <T extends IJT400Format> Map<Integer, Field> toFieldMap(final Class<T> format) {
 
+		final AtomicInteger cnt = new AtomicInteger(0);
+		
 		return getAllFields(new ArrayList<Field>(), format).stream()
 		    .filter( f -> f.isAnnotationPresent(JT400Format.class) )
-			.collect(Collectors.toMap(f -> f.getAnnotation(JT400Format.class).offset(), field -> field));
+			.collect(Collectors.toMap(f -> { 
+				
+				final JT400Format fmt = f.getAnnotation(JT400Format.class);
+				
+				if (fmt.offset()<0) {
+					return  cnt.decrementAndGet();
+				}
+				
+				return f.getAnnotation(JT400Format.class).offset(); 
+			
+			}, field -> field));
 		
 	}
 
@@ -442,5 +449,19 @@ enum JT400ExtFormatBuilder {
 	    }
 
 	    return fields;
+	}
+	
+	/**
+	 * Use reflection to set value to object field
+	 * @param field
+	 * @param obj
+	 * @param value
+	 * @throws Exception
+	 */
+	private static void setField(final Field field, final Object obj, final Object value) throws Exception {
+		if (value != null) {
+			field.setAccessible(true);
+			field.set(obj, value);
+		}
 	}
 }
