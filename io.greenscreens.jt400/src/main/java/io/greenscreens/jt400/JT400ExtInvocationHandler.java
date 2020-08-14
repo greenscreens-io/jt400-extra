@@ -171,6 +171,7 @@ final class JT400ExtInvocationHandler<P extends IJT400Params> implements Invocat
 			if (field.getType() == ByteBuffer.class) {
 				if (field.getAnnotation(Id.class) != null) {
 					if (field.getAnnotation(Output.class) != null) {
+						field.setAccessible(true);
 						return (ByteBuffer) field.get(params);			
 					}
 				}
