@@ -1,9 +1,10 @@
 package io.greenscreens.jt400.programs.qsys.qdcrdevd;
 
 import io.greenscreens.jt400.annotations.JT400Format;
+import io.greenscreens.jt400.interfaces.IJT400Format;
 
 @JT400Format(length = 36)
-public class DEVD0200ModesActive {
+public class DEVD0200ModesActive implements IJT400Format {
 
 	@JT400Format(offset = 0, length = 10)
 	String modeName;

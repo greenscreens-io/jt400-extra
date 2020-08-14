@@ -6,6 +6,7 @@
  */
 package io.greenscreens.jt400;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ import com.ibm.as400.access.AS400;
 import com.ibm.as400.access.AS400DataType;
 
 import io.greenscreens.jt400.annotations.JT400Format;
+import io.greenscreens.jt400.annotations.JT400Ref;
 import io.greenscreens.jt400.interfaces.IJT400Format;
 
 /**
@@ -82,22 +84,37 @@ enum JT400ExtFormatBuilder {
 	 * @param buffer
 	 * @throws Exception
 	 */
+	@SuppressWarnings("unchecked")
 	final static private <T extends IJT400Format> void setArray(final AS400 as400, final T obj, final Class<T> format, final Map<Integer, Field> fields, final Field field, final ByteBuffer buffer)  throws Exception {
 
-		final JT400Format jt400Format = field.getAnnotation(JT400Format.class);
-
+		JT400Format classFormat = null;
+		JT400Format fieldFormat = field.getAnnotation(JT400Format.class);
+		
+		final boolean isSubFormat = fieldFormat.type() == AS400DataType.TYPE_STRUCTURE;
+		
+		if (isSubFormat) {
+			classFormat = field.getType().getComponentType().getAnnotation(JT400Format.class);	
+		}		
+		
 		final int dataLen = getArrayDataLength(fields, field);
 		final int arraylen = getArrayLength(as400, format, fields, field, buffer);
 		final int offset = getArrayOffset(as400, format, fields, field, buffer);
-				
-		final Object [] list = new Object[arraylen];
+		
+		final Object list = Array.newInstance(field.getType().getComponentType(), arraylen);
 				
 		int i = 0;
 		
 		while (i < arraylen) {
 			byte [] tmp = JT400ExtUtil.getBytesFrom(buffer, offset + (dataLen * i), dataLen);
-			Object value = getValue(as400, fields, field, jt400Format, tmp);
-			list[i] = value;
+			Object value = null;
+			
+			if (isSubFormat) {
+				value = JT400ExtFormatBuilder.build(as400, (Class<T>) field.getType().getComponentType(), ByteBuffer.wrap(tmp));
+			} else {
+				value = getValue(as400, fields, field, classFormat, tmp);
+			}
+			
+			Array.set(list, i, value);
 			i++;
 		}
 				
@@ -297,7 +314,14 @@ enum JT400ExtFormatBuilder {
 	 */
 	private static int getStructureLength(final Field field) {
 		
-		final JT400Format format = field.getType().getAnnotation(JT400Format.class);
+		JT400Format format = null;
+		
+		if (field.getType().isArray()) {
+			format = field.getType().componentType().getAnnotation(JT400Format.class);
+		} else {
+			format = field.getType().getAnnotation(JT400Format.class);
+		}
+		
 		if (format != null) {
 			return format.length();
 		}
@@ -371,23 +395,28 @@ enum JT400ExtFormatBuilder {
 	 */
 	final static private <T extends IJT400Format> int getArrayLength(final AS400 as400, final Class<T> format, final Map<Integer, Field> fields, final Field field, final ByteBuffer buffer) throws Exception {
 
-		final JT400Format jtformat = field.getAnnotation(JT400Format.class);
-		if (jtformat.of() < 0) {
-			return jtformat.length();
+		int fieldRef = -1;
+		final JT400Ref jt400Ref = field.getAnnotation(JT400Ref.class);
+		if (jt400Ref != null) {
+			if (fields.containsKey(jt400Ref.length())) {
+				fieldRef = jt400Ref.length();
+			}	
+		} else {
+			final JT400Format jtformat = field.getAnnotation(JT400Format.class);
+			if (jtformat.of() < 0) {
+				return jtformat.length();
+			}
+		
+			if (fields.containsKey(jtformat.of())) {
+				fieldRef = jtformat.of();
+			}
+			
 		}
 		
-		if (!fields.containsKey(jtformat.of())) return 0;
+		if (fieldRef < 0) return 0;
+		final Field refField = fields.get(fieldRef);
+		return getFieldValue(as400, fields, refField, buffer);
 		
-		final Field refField = fields.get(jtformat.of());
-		final JT400Format fmt = refField.getAnnotation(JT400Format.class);
-		final byte [] tmp = JT400ExtUtil.getBytesFrom(buffer, fmt.offset(), getDataLength(fmt));
-		final Object value = getValue(as400, fields, refField, fmt, tmp);
-		
-		if (value != null) {
-			return (int) value;
-		}
-		
-		return 0;
 	}
 
 	/**
@@ -402,12 +431,32 @@ enum JT400ExtFormatBuilder {
 	 */
 	final static private <T extends IJT400Format> int getArrayOffset(final AS400 as400, final Class<T> format, final Map<Integer, Field> fields, final Field field, final ByteBuffer buffer) throws Exception {
 
-		final JT400Format jt400Format = field.getAnnotation(JT400Format.class);
-		
+		final JT400Ref jt400Ref = field.getAnnotation(JT400Ref.class);
+		if (jt400Ref != null) {
+			if (fields.containsKey(jt400Ref.offset())) {
+				final Field refField = fields.get(jt400Ref.offset());
+				return getFieldValue(as400, fields, refField, buffer);			
+			}	
+		}
+
+		final JT400Format jt400Format = field.getAnnotation(JT400Format.class);		
 		return jt400Format.offset();
  
 	}
 
+	final static private <T extends IJT400Format> int getFieldValue(final AS400 as400, final Map<Integer, Field> fields, final Field field, final ByteBuffer buffer) throws Exception {
+
+		final JT400Format fmt = field.getAnnotation(JT400Format.class);
+		final byte [] tmp = JT400ExtUtil.getBytesFrom(buffer, fmt.offset(), getDataLength(fmt));
+		final Object value = getValue(as400, fields, field, fmt, tmp);
+
+		if (value != null) {
+			return (int) value;
+		}
+
+		return 0;
+	}
+	
 	/**
 	 * Get all class fields annotated with JT400Format and store into map by offset position as key
 	 * 

@@ -68,11 +68,11 @@ public class Builder {
 		}
 		
 		final int len = JT400ExtUtil.getFormatLength(clazz);
-		
+
 		return QDCRDEVD.builder()
 				.withReceiver(ByteBuffer.allocate(len))
 				.withLength(len)
-				.withFormatName(clazz.getName())
+				.withFormatName(clazz.getSimpleName())
 				.withDeviceName(displayName)
 				.build();
 	}

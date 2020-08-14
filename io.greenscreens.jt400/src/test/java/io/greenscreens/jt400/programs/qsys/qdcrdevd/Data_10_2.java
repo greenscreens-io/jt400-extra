@@ -1,13 +1,20 @@
 package io.greenscreens.jt400.programs.qsys.qdcrdevd;
 
 import io.greenscreens.jt400.annotations.JT400Format;
+import io.greenscreens.jt400.interfaces.IJT400Format;
 
 @JT400Format(length = 12)
-public class DEVD0200Modes {
+public class Data_10_2 implements IJT400Format {
 
 	@JT400Format(offset = 0, length = 10)
-	String modeName;
+	String name;
 	
 	@JT400Format(offset = 10, length = 2)
 	String reserved;
+
+	@Override
+	public String toString() {
+		return "Data_10_2 [name=" + name + ", reserved=" + reserved + "]";
+	}
+		
 }

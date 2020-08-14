@@ -15,6 +15,7 @@ import io.greenscreens.jt400.annotations.Input;
 import io.greenscreens.jt400.annotations.JT400Argument;
 import io.greenscreens.jt400.annotations.JT400Program;
 import io.greenscreens.jt400.annotations.Output;
+import io.greenscreens.jt400.interfaces.IJT400Format;
 import io.greenscreens.jt400.interfaces.IJT400Params;
 
 /**
@@ -115,7 +116,7 @@ public class QDCRDEVD implements IJT400Params {
 	 * @param displayName
 	 * @return
 	 */
-	public static QDCRDEVD build(final Class<DEVD0100> clazz, final String displayName) {
+	public static QDCRDEVD build(final Class<? extends IJT400Format> clazz, final String displayName) {
 		return Builder.build(clazz, displayName);
 	}
 	

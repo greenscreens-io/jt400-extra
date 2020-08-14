@@ -38,7 +38,7 @@ public class DEVD0200 extends DEVD0100 {
 	// These fields repeat for each mode name
 	@JT400Ref(length = 108, offset = 104)
 	@JT400Format(type = AS400DataType.TYPE_STRUCTURE)
-	DEVD0200Modes [] modes;
+	Data_10_2 [] modes;
 
 	// These fields repeat for each active mode 
 	@JT400Ref(length = 260, offset = 256)
