@@ -110,9 +110,6 @@ enum JT400ExtParameterBuilder {
 
 		try {
 			parameter = buildAnnotated(as400, obj, field);
-			if (parameter == null) {
-				parameter = buildAuto(as400, obj, field);
-			}
 		} catch (Exception e) {
 			LOG.error(e.getMessage());
 			LOG.debug(e.getMessage(), e);
@@ -253,11 +250,14 @@ enum JT400ExtParameterBuilder {
 				if (data == null) data = ByteBuffer.allocate(ann.length());
 				val = data.array();
 				lena = data.capacity();
-			} else {
+			} else if (field.getType() == byte[].class) {
 				byte [] data = getFieldValue(obj, field);
 				if (data == null) data = new byte[ann.length()];
 				val = data;
 				lena = data.length;
+			} else {
+				val = new byte[ann.length()];
+				lena = ann.length();
 			}
 
 			dataType = new AS400ByteArray(lena);
@@ -286,6 +286,7 @@ enum JT400ExtParameterBuilder {
 		final boolean isInputOutput = output != null && input != null;
 
 		final ProgramParameter parameter = new ProgramParameter();
+		parameter.setParameterType(ann.pass());
 
 		if (isOutputOnly) {
 			parameter.setOutputDataLength(dataType.getByteLength());
@@ -298,25 +299,11 @@ enum JT400ExtParameterBuilder {
 		}
 
 		if (isInputOutput) {
-			final byte[] data = new byte[16 + ann.length()];
-			parameter.setInputData(data);
-			parameter.setOutputDataLength(16 + ann.length());
+			parameter.setInputData(dataType.toBytes(val));
+			parameter.setOutputDataLength(dataType.getByteLength());
 		}
 
 		return parameter;
-	}
-
-	/**
-	 * Not used for now
-	 *
-	 * @param as400
-	 * @param obj
-	 * @param field
-	 * @return
-	 * @throws Exception
-	 */
-	final static private <K extends IJT400Params> ProgramParameter buildAuto(final AS400 as400, final K obj, final Field field) throws Exception {
-		return null;
 	}
 
 	/**

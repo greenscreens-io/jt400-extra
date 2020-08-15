@@ -14,6 +14,7 @@ import java.nio.ByteBuffer;
 
 import com.ibm.as400.access.AS400;
 import com.ibm.as400.access.ProgramParameter;
+import com.ibm.as400.access.QSYSObjectPathName;
 
 import io.greenscreens.jt400.annotations.JT400Program;
 import io.greenscreens.jt400.interfaces.IJT400Format;
@@ -62,7 +63,21 @@ public enum JT400ExtFactory {
 	 * @return
 	 */
 	final static public <I extends IJT400Params, T> IJT400Program<I> create(final Class<T> caller, final Class<I> input, final String library, final String program) {
-		return create(null, caller, input, library, program);
+		return create(null, caller, input, library, program, false);
+	}
+
+	/**
+	 * Create Proxy Instance from interface implementing IJT400Program as service
+	 * 
+	 * @param caller
+	 * @param input
+	 * @param library
+	 * @param program
+	 * @param service
+	 * @return
+	 */
+	final static public <I extends IJT400Params, T> IJT400Program<I> create(final Class<T> caller, final Class<I> input, final String library, final String program, final boolean service) {
+		return create(null, caller, input, library, program, service);
 	}
 
 	/**
@@ -79,8 +94,8 @@ public enum JT400ExtFactory {
 		if (pgm == null) {
 			throw new RuntimeException("Program not defined!");
 		}
-
-		return create(as400, caller, input, pgm.library(), pgm.program());
+		
+		return create(as400, caller, input, pgm.library(), pgm.program(), pgm.service());
 	}
 
 	/**
@@ -94,9 +109,10 @@ public enum JT400ExtFactory {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	final static public <I extends IJT400Params, P extends IJT400Program<I>, T> P create(final AS400 as400, final Class<T> caller, final Class<I> input, final String library, final String program) {
+	final static public <I extends IJT400Params, P extends IJT400Program<I>, T> P create(final AS400 as400, final Class<T> caller, final Class<I> input, final String library, final String program, final boolean service) {
 
-		final JT400ExtInvocationHandler<I> handler = new JT400ExtInvocationHandler<I>(as400, input, library, program);
+		final QSYSObjectPathName qsysPath = JT400ExtUtil.toQSYSPath(program, library, service);
+		final JT400ExtInvocationHandler<I> handler = new JT400ExtInvocationHandler<I>(as400, input, qsysPath);
 
 		final Object instance = Proxy.newProxyInstance(
 				  IJT400Program.class.getClassLoader(),

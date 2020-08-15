@@ -23,15 +23,34 @@ import com.ibm.as400.access.ProgramParameter;
 @Target({ FIELD, PARAMETER, TYPE_PARAMETER })
 public @interface JT400Argument {
 
-	// parameter type
+	/**
+	 * parameter type
+	 * @return
+	 */
 	int type() default -1;
 
-	// length for string, array, decimals
+	/**
+	 * length for string, array, decimals
+	 * @return
+	 */
 	int length() default 0;
 
-	// decimal part for packed and zoned decimal
+	/**
+	 * decimal part for packed and zoned decimal
+	 * @return
+	 */
 	int decimals() default 0;
 
-	// type of argument pass rule
-	int pass() default ProgramParameter.PASS_BY_REFERENCE;
+	/**
+	 * time / date formats
+	 * @return
+	 */
+	int format() default -1;
+
+	/**
+	 * type of argument pass rule, by value or reference
+	 * default is by value
+	 * @return
+	 */
+	int pass() default ProgramParameter.PASS_BY_VALUE;
 }

@@ -9,14 +9,18 @@ package io.greenscreens.jt400;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 import com.ibm.as400.access.AS400;
 import com.ibm.as400.access.AS400Message;
 import com.ibm.as400.access.ProgramCall;
 import com.ibm.as400.access.ProgramParameter;
+import com.ibm.as400.access.QSYSObjectPathName;
+import com.ibm.as400.access.ServiceProgramCall;
 
 import io.greenscreens.jt400.annotations.JT400Format;
 import io.greenscreens.jt400.annotations.JT400Program;
@@ -30,6 +34,33 @@ public enum JT400ExtUtil {
 ;
 
 	/**
+	 * Create JT400 program call path
+	 *
+	 * @param program
+	 * @param library
+	 * @return
+	 */
+	public static QSYSObjectPathName toQSYSPath(final String program, final String library, final boolean service) {
+		final String pgm = Optional.of(program).get().toUpperCase().trim();
+		final String lib = Optional.ofNullable(library).orElse("QSYS").toUpperCase().trim();
+		return new QSYSObjectPathName(lib, pgm, service ? "SRVPGM" : "PGM");
+	}
+
+	/**
+	 * Use reflection to set value to object field
+	 * @param field
+	 * @param obj
+	 * @param value
+	 * @throws Exception
+	 */
+	public static void setField(final Field field, final Object obj, final Object value) throws Exception {
+		if (value != null) {
+			field.setAccessible(true);
+			field.set(obj, value);
+		}
+	}
+
+	/**
 	 * Generic JT400 program call
 	 * @param as400
 	 * @param program
@@ -37,7 +68,7 @@ public enum JT400ExtUtil {
 	 * @return
 	 * @throws Exception
 	 */
-	static public ProgramCall call(final AS400 as400, final String program, final ProgramParameter[] parameters) throws Exception {
+	static public ProgramCall call(final AS400 as400, final String program, final ProgramParameter[] parameters, final JT400Program ann) throws Exception {
 
 		if (as400 == null) {
 			throw new RuntimeException("Not all definitions available!");
@@ -45,6 +76,43 @@ public enum JT400ExtUtil {
 
 		final ProgramCall programCall = new ProgramCall(as400);
 		programCall.setProgram(program, parameters);
+		programCall.setThreadSafe(ann.threadSafe());
+
+		if (ann.timeout() > -1) {
+			programCall.setTimeOut(ann.timeout());
+		}
+
+		if (!programCall.run()) {
+			throw new JT400Exception(programCall.getMessageList());
+		}
+
+		return programCall;
+	}
+
+	/**
+	 * Generic JT400 ServiceProgramCall
+	 * @param as400
+	 * @param program
+	 * @param parameters
+	 * @param ann
+	 * @return
+	 * @throws Exception
+	 */
+	static public ServiceProgramCall callService(final AS400 as400, final String program, final ProgramParameter[] parameters, final JT400Program ann) throws Exception {
+
+		if (as400 == null) {
+			throw new RuntimeException("Not all definitions available!");
+		}
+
+		final ServiceProgramCall programCall = new ServiceProgramCall(as400);
+		programCall.setProgram(program, parameters);
+		programCall.setThreadSafe(ann.threadSafe());
+		programCall.setProcedureName(ann.procedure());
+		programCall.setReturnValueFormat(ann.returnFormat());
+
+		if (ann.timeout() > -1) {
+			programCall.setTimeOut(ann.timeout());
+		}
 
 		if (!programCall.run()) {
 			throw new JT400Exception(programCall.getMessageList());
@@ -201,5 +269,5 @@ public enum JT400ExtUtil {
 
 		return data;
 	}
-	
+
 }

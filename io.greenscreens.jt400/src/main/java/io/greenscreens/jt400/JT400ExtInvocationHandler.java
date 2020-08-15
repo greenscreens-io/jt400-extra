@@ -10,20 +10,21 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
-import java.util.Optional;
 
 import com.ibm.as400.access.AS400;
 import com.ibm.as400.access.ProgramCall;
 import com.ibm.as400.access.ProgramParameter;
 import com.ibm.as400.access.QSYSObjectPathName;
+import com.ibm.as400.access.ServiceProgramCall;
 
 import io.greenscreens.jt400.annotations.Id;
+import io.greenscreens.jt400.annotations.JT400Program;
 import io.greenscreens.jt400.annotations.Output;
 import io.greenscreens.jt400.interfaces.IJT400Format;
 import io.greenscreens.jt400.interfaces.IJT400Params;
 
 /**
- * Proxy class to generate JT400 call on a given definitions
+ * Proxy class to generate JT400 call for given definitions
  */
 final class JT400ExtInvocationHandler<P extends IJT400Params> implements InvocationHandler {
 
@@ -39,10 +40,10 @@ final class JT400ExtInvocationHandler<P extends IJT400Params> implements Invocat
 	 * @param library
 	 * @param program
 	 */
-	public JT400ExtInvocationHandler(final AS400 as400, final Class<P> input, final String library, final String program) {
+	public JT400ExtInvocationHandler(final AS400 as400, final Class<P> input, final QSYSObjectPathName qsysPath) {
 		this.as400 = as400;
 		this.input = input;
-		this.programName = initProgram(program, library);
+		this.programName = qsysPath;
 	}
 
 	/**
@@ -165,6 +166,7 @@ final class JT400ExtInvocationHandler<P extends IJT400Params> implements Invocat
 	 */
 	private ByteBuffer getOutput(final P params, final Class<P> args) throws Exception {
 
+		// of not plain POJO, might require recursion for parent classes
 		final Field[] fields = args.getDeclaredFields();
 
 		for (Field field : fields) {
@@ -198,23 +200,17 @@ final class JT400ExtInvocationHandler<P extends IJT400Params> implements Invocat
 			throw new RuntimeException("Not all definitions available!");
 		}
 
+		final JT400Program jt400PGM = args.getAnnotation(JT400Program.class);
 		final ProgramParameter[] parameters = JT400ExtParameterBuilder.build(as400, params, args);
-		final ProgramCall programCall = JT400ExtUtil.call(as400, programName.getPath(), parameters);
 
-		JT400ExtResponseBuilder.build(programCall, params, args);
-	}
+		if (jt400PGM.service()) {
+			final ServiceProgramCall programCall = JT400ExtUtil.callService(as400, programName.getPath(), parameters, jt400PGM);
+			JT400ExtResponseBuilder.build(programCall, params, args);
+		} else {
+			final ProgramCall programCall = JT400ExtUtil.call(as400, programName.getPath(), parameters, jt400PGM);
+			JT400ExtResponseBuilder.build(programCall, params, args);
+		}
 
-	/**
-	 * Create JT400 program call path
-	 *
-	 * @param program
-	 * @param library
-	 * @return
-	 */
-	private QSYSObjectPathName initProgram(final String program, final String library) {
-		final String pgm = Optional.of(program).get().toUpperCase().trim();
-		final String lib = Optional.ofNullable(library).orElse("QSYS").toUpperCase().trim();
-		return new QSYSObjectPathName(lib, pgm, "PGM");
 	}
 
 }

@@ -9,6 +9,7 @@ package io.greenscreens.jt400.example;
 import java.nio.ByteBuffer;
 import com.ibm.as400.access.AS400;
 
+import io.greenscreens.jt400.ERRC0100;
 import io.greenscreens.jt400.JT400ExtFactory;
 import io.greenscreens.jt400.JT400ExtUtil;
 import io.greenscreens.jt400.programs.qsys.qdcrdevd.DEVD0100;
@@ -16,6 +17,11 @@ import io.greenscreens.jt400.programs.qsys.qdcrdevd.DEVD0600;
 import io.greenscreens.jt400.programs.qsys.qdcrdevd.DEVD1100;
 import io.greenscreens.jt400.programs.qsys.qdcrdevd.IQDCRDEVD;
 import io.greenscreens.jt400.programs.qsys.qdcrdevd.QDCRDEVD;
+import io.greenscreens.jt400.programs.qsys.qtocnetsts.IQTOCNETSTS;
+import io.greenscreens.jt400.programs.qsys.qtocnetsts.QTOCNETSTS;
+import io.greenscreens.jt400.programs.qsys.qtocnetsts.TCPA0100;
+import io.greenscreens.jt400.programs.qsys.qzcaclt.IQZCACLT;
+import io.greenscreens.jt400.programs.qsys.qzcaclt.QZCACLT;
 
 public class Test {
 
@@ -26,7 +32,7 @@ public class Test {
 	static final AS400 as400 = new AS400("127.0.0.1", "QSECOFR", "QSECOFR");
 
 	public static void main(String[] args) throws Exception {
-		testFormat();
+		main4();
 	}
 
 	/**
@@ -35,7 +41,6 @@ public class Test {
 	 */
 	public static void testFormat() throws Exception {
 
-      	// contains child format parsing - deep scan
 		byte [] data = JT400ExtUtil.hexToBytes(DEVD1100Hex);
 		final DEVD1100 result1100 = JT400ExtFactory.build(as400, DEVD1100.class, ByteBuffer.wrap(data));
 		System.out.println(result1100);
@@ -68,6 +73,70 @@ public class Test {
 	}
 
 	/**
+	 * Test service program call
+	 *
+	 * @throws Exception
+	 */
+	public static void main4() throws Exception {
+
+		final IQTOCNETSTS program = IQTOCNETSTS.create(as400);
+		final QTOCNETSTS params = QTOCNETSTS.build(TCPA0100.class);
+		final TCPA0100 result = program.call(params, TCPA0100.class);
+
+		System.out.println(result);
+
+	}
+
+	/**
+	 * Test servcie call with error structure response
+	 * @throws Exception
+	 */
+	public static void main3() throws Exception {
+
+		final IQZCACLT program = IQZCACLT.create(as400);
+
+		// if no error output buffer, throws exception if call not successful
+		// final QZCACLT params = QZCACLT.build("TEST", 0);
+		final QZCACLT params = QZCACLT.build("TEST", 1024);
+		program.call(params);
+
+		// if service call has a return value
+		// System.out.println(params.getRetVal());
+
+		final ERRC0100 err = JT400ExtFactory.build(as400, ERRC0100.class, params.getErrorCode());
+		System.out.println(err);
+		System.out.println(params.getClientHandle());
+	}
+
+	/**
+	 * Error output, without thrown exception
+	 * @throws Exception
+	 */
+	public static void main2() throws Exception {
+
+		final int maxSize = 2048;
+
+		final IQDCRDEVD program = IQDCRDEVD.create(as400);
+
+		final ByteBuffer errBuff = ERRC0100.toBuffer(1024);
+		final QDCRDEVD params = QDCRDEVD.builder()
+				.withReceiver(ByteBuffer.allocate(maxSize))
+				.withLength(maxSize)
+				.withFormatName("DEVD1100")
+				.withDeviceName("TESTPRT")
+				.withErrorCode(errBuff)
+				.build();
+
+		final DEVD1100 result1 = program.call(params, DEVD1100.class);
+
+		final ERRC0100 err = JT400ExtFactory.build(as400, ERRC0100.class, params.getErrorCode());
+		System.out.println(err);
+
+		System.out.println(result1);
+
+	}
+
+	/**
 	 * Test manual parameters call
 	 * @throws Exception
 	 */
@@ -82,6 +151,7 @@ public class Test {
 				.withLength(maxSize)
 				.withFormatName("DEVD1100")
 				.withDeviceName("HPAS400PRT")
+				.withErrorCode(ByteBuffer.allocate(16))
 				.build();
 
 		final DEVD1100 result1 = program.call(params, DEVD1100.class);

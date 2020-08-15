@@ -22,9 +22,30 @@ import io.greenscreens.jt400.interfaces.IJT400Format;
 @Target({ TYPE_PARAMETER, TYPE })
 public @interface JT400Program {
 
+	// program name
 	String program();
+
+	// program library
 	String library();
+
+	// number of arguments
 	int arguments();
+
+	// call timeout
+	int timeout() default -1;
+
+	// thread safe execution
+	boolean threadSafe() default false;
+
+	// declared list of return formats
 	Class<? extends IJT400Format> [] formats() default {};
 
+	// set to true when program is service
+	boolean service() default false;
+
+	// return format if program is service
+	int returnFormat() default -1;
+
+	// procedure name when it is service program
+	String procedure() default "";
 }
