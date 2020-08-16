@@ -6,6 +6,7 @@
  */
 package io.greenscreens.jt400.annotations;
 
+import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.ElementType.TYPE_PARAMETER;
@@ -18,7 +19,7 @@ import java.lang.annotation.Target;
  * Annotation to define program parameter
  */
 @Retention(RUNTIME)
-@Target({ FIELD, PARAMETER, TYPE_PARAMETER })
+@Target({ FIELD, PARAMETER, TYPE_PARAMETER, TYPE })
 public @interface Id {
 
 	int value();

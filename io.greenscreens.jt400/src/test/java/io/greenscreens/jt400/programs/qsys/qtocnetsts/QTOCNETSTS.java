@@ -1,8 +1,8 @@
 /*
  * Copyright (C) 2015, 2020  Green Screens Ltd.
- *
+ * 
  * https://www.greenscreens.io
- *
+ * 
  */
 package io.greenscreens.jt400.programs.qsys.qtocnetsts;
 
@@ -22,7 +22,7 @@ import io.greenscreens.jt400.interfaces.IJT400Params;
 
 /**
  * The Retrieve TCP/IP Attributes (QtocRtvTCPA) API retrieves TCP/IPv4 and TCP/IPv6 stack attributes.
- *
+ * 
  * https://www.ibm.com/support/knowledgecenter/ssw_ibm_i_73/apis/qtocrtvtcpa.htm
  *
  */
@@ -50,7 +50,7 @@ public class QTOCNETSTS implements IJT400Params {
 	@Id(1) @Input
 	@JT400Argument(type = AS400DataType.TYPE_BIN4, pass = ProgramParameter.PASS_BY_REFERENCE)
 	int length;
-
+	
 	/**
 	 * Format name
 	 */
@@ -64,6 +64,22 @@ public class QTOCNETSTS implements IJT400Params {
 	@Id(3) @Input @Output
 	@JT400Argument(type = AS400DataType.TYPE_BYTE_ARRAY, pass = ProgramParameter.PASS_BY_REFERENCE)
 	ByteBuffer errorCode;
+	
+	public ByteBuffer getReceiver() {
+		return receiver;
+	}
+
+	public int getLength() {
+		return length;
+	}
+
+	public String getFormat() {
+		return format;
+	}
+
+	public ByteBuffer getErrorCode() {
+		return errorCode;
+	}
 
 	QTOCNETSTS(final Builder builder) {
 		this.receiver = builder.receiver;
@@ -85,9 +101,9 @@ public class QTOCNETSTS implements IJT400Params {
 	public static Builder builder() {
 		return new Builder();
 	}
-
+	
 	public static <T extends IJT400Format> QTOCNETSTS build(Class<T> clazz) {
 		return Builder.build(clazz);
 	}
-
+	
 }

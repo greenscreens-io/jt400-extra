@@ -24,4 +24,10 @@ public class DEVD0200ModesActive implements IJT400Format {
 	@JT400Format(offset = 31, length = 6)
 	String jobNumber;
 
+	@Override
+	public String toString() {
+		return "DEVD0200ModesActive [modeName=" + modeName + ", jobName=" + jobName + ", userName=" + userName
+				+ ", jobNumber=" + jobNumber + "]";
+	}
+
 }

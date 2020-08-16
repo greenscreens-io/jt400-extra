@@ -10,12 +10,14 @@ import java.util.Arrays;
 
 import com.ibm.as400.access.AS400DataType;
 
+import io.greenscreens.jt400.annotations.Id;
 import io.greenscreens.jt400.annotations.JT400Format;
 import io.greenscreens.jt400.annotations.JT400Ref;
 
 // There are two ways to call to populate array
-// 1. length should be big enough to fit array data or modes
+// 1. length should be big enough to fit array data
 // 2. call 2 times, first to get sizes, second with calculated size from data from 1st call.
+@Id(value = 0)
 @JT400Format(length = 1712)
 public class DEVD1100 extends DEVD0100 {
 
@@ -52,33 +54,31 @@ public class DEVD1100 extends DEVD0100 {
 	protected int lengthPubInfo;
 
 	@JT400Ref(offset = 920, length = 924)
-	@JT400Format(type = AS400DataType.TYPE_STRUCTURE, offset = -1)
+	@JT400Format(type = AS400DataType.TYPE_STRUCTURE)
 	Data_10_2 [] switchedLineName;
 
 	@JT400Ref(offset = 964, length = 968)
-	@JT400Format(type = AS400DataType.TYPE_STRUCTURE, offset = -2)
+	@JT400Format(type = AS400DataType.TYPE_STRUCTURE)
 	Data_10_2 [] userDefOpt;
 
 	@JT400Ref(offset = 976, length = 980)
-	@JT400Format(type = AS400DataType.TYPE_STRUCTURE, offset = -3)
+	@JT400Format(type = AS400DataType.TYPE_STRUCTURE)
 	Data_10_2 [] dataStreamSupp;
 
 	@JT400Ref(offset = 1520, length = 1524)
-	@JT400Format(type = AS400DataType.TYPE_STRUCTURE, offset = -4)
+	@JT400Format(type = AS400DataType.TYPE_STRUCTURE)
 	DEVD1101PubEntry [] publishingEntry;
 
 	@Override
 	public String toString() {
-		return "DEVD1100 [offsetSwitchedLines=" + offsetSwitchedLines + ", lengthSwitchedLines=" + lengthSwitchedLines
+		return super.toString() + "\n" +
+		"DEVD1100 [offsetSwitchedLines=" + offsetSwitchedLines + ", lengthSwitchedLines=" + lengthSwitchedLines
 				+ ", offsetUserDefOpt=" + offsetUserDefOpt + ", lengthUserDefOpt=" + lengthUserDefOpt
 				+ ", offsetUserDefData=" + offsetUserDefData + ", lengthUserDefData=" + lengthUserDefData
 				+ ", offsetPubInfo=" + offsetPubInfo + ", lengthPubInfo=" + lengthPubInfo + ", switchedLineName="
 				+ Arrays.toString(switchedLineName) + ", userDefOpt=" + Arrays.toString(userDefOpt)
 				+ ", dataStreamSupp=" + Arrays.toString(dataStreamSupp) + ", publishingEntry="
-				+ Arrays.toString(publishingEntry) + ", bytesReturned=" + bytesReturned + ", bytesAvailable="
-				+ bytesAvailable + ", date=" + date + ", time=" + time + ", deviceName=" + deviceName
-				+ ", deviceCategory=" + deviceCategory + ", onlineAtIPL=" + onlineAtIPL + ", description=" + description
-				+ ", reserve=" + reserve + "]";
+				+ Arrays.toString(publishingEntry) + "]";
 	}
 
 }

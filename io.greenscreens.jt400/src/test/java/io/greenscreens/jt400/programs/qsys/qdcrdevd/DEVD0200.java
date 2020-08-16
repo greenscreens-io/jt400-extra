@@ -6,14 +6,18 @@
  */
  package io.greenscreens.jt400.programs.qsys.qdcrdevd;
 
+import java.util.Arrays;
+
 import com.ibm.as400.access.AS400DataType;
 
+import io.greenscreens.jt400.annotations.Id;
 import io.greenscreens.jt400.annotations.JT400Format;
 import io.greenscreens.jt400.annotations.JT400Ref;
 
 // There are two ways to call to populate array
 // 1. length should be big enough to fit array data or modes
 // 2. call 2 times, first to get sizes, second with calculated size from data from 1st call.
+@Id(value = 0)
 @JT400Format(length = 268)
 public class DEVD0200 extends DEVD0100 {
 
@@ -50,4 +54,16 @@ public class DEVD0200 extends DEVD0100 {
 	@JT400Ref(length = 260, offset = 256)
 	@JT400Format(type = AS400DataType.TYPE_STRUCTURE)
 	DEVD0200ModesActive []  modesActive;
+
+	@Override
+	public String toString() {
+		return super.toString() + "\n" +
+				"DEVD0200 [offsetModeNamesList=" + offsetModeNamesList + ", numberModeNames=" + numberModeNames
+				+ ", lengthModeNames=" + lengthModeNames + ", offsetModeNamesListActive=" + offsetModeNamesListActive
+				+ ", numberModeNamesActive=" + numberModeNamesActive + ", lengthModeNamesActive="
+				+ lengthModeNamesActive + ", modes=" + Arrays.toString(modes) + ", modesActive="
+				+ Arrays.toString(modesActive) + "]";
+	}
+	
+	
 }

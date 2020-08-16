@@ -6,6 +6,7 @@
  */
 package io.greenscreens.jt400.programs.qsys.qdcrdevd;
 
+import io.greenscreens.jt400.annotations.Id;
 import io.greenscreens.jt400.annotations.JT400Format;
 
 /**
@@ -14,6 +15,7 @@ import io.greenscreens.jt400.annotations.JT400Format;
  *
  * Detailed information for device category *DSP
  */
+@Id(value = 0)
 @JT400Format(length = 1124)
 public class DEVD0600 extends DEVD0100 {
 
@@ -37,12 +39,10 @@ public class DEVD0600 extends DEVD0100 {
 
 	@Override
 	public String toString() {
-		return "DEVD0600 [jobName=" + jobName + ", userName=" + userName + ", jobNumber=" + jobNumber
+		return super.toString() + "\n" +
+		"DEVD0600 [jobName=" + jobName + ", userName=" + userName + ", jobNumber=" + jobNumber
 				+ ", currentMessageQueue=" + currentMessageQueue + ", currentMessageQueueLibrary="
-				+ currentMessageQueueLibrary + ", ipAddress=" + ipAddress + ", bytesReturned=" + bytesReturned
-				+ ", bytesAvailable=" + bytesAvailable + ", date=" + date + ", time=" + time + ", deviceName="
-				+ deviceName + ", deviceCategory=" + deviceCategory + ", onlineAtIPL=" + onlineAtIPL + ", description="
-				+ description + ", reserve=" + reserve + "]";
+				+ currentMessageQueueLibrary + ", ipAddress=" + ipAddress + "]";
 	}
 
 }

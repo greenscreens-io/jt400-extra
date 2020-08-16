@@ -9,6 +9,7 @@ package io.greenscreens.jt400;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -18,6 +19,7 @@ import com.ibm.as400.access.AS400Bin1;
 import com.ibm.as400.access.AS400Bin2;
 import com.ibm.as400.access.AS400Bin4;
 import com.ibm.as400.access.AS400Bin8;
+import com.ibm.as400.access.AS400DataType;
 import com.ibm.as400.access.AS400Date;
 import com.ibm.as400.access.AS400DecFloat;
 import com.ibm.as400.access.AS400Float4;
@@ -32,14 +34,24 @@ import com.ibm.as400.access.AS400UnsignedBin4;
 import com.ibm.as400.access.AS400UnsignedBin8;
 import com.ibm.as400.access.AS400ZonedDecimal;
 
-import io.greenscreens.jt400.annotations.JT400Format;
-
 /**
  * Convert from byte array to specified field type / jt400 type
  */
 enum JT400ExtBinaryConverter {
 ;
 
+	/**
+	 * Helper method for getting reference length or offset
+	 * @param buffer
+	 * @param offset
+	 * @return
+	 */
+	static public int getIntValue(final ByteBuffer buffer, final int offset) {
+		final AS400Bin4 bin4 = new AS400Bin4();
+		final byte [] tmp = JT400ExtUtil.getBytesFrom(buffer, offset, 4);
+		return bin4.toInt(tmp);
+	}
+	
 	/**
 	 * Convert byte data from AS400Bin1
 	 * @param as400
@@ -49,7 +61,7 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 * @throws Exception
 	 */
-	final static Object asAS400Bin1(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) {
+	final static Object asAS400Bin1(final AS400 as400, final Field field, final byte[] tmp) {
 
 		Object value = null;
 
@@ -77,7 +89,7 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 * @throws Exception
 	 */
-	final static Object asAS400Bin2(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) {
+	final static Object asAS400Bin2(final AS400 as400, final Field field, final byte[] tmp) {
 
 		Object value = null;
 
@@ -100,7 +112,7 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 * @throws Exception
 	 */
-	final static Object asAS400Bin4(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) {
+	final static Object asAS400Bin4(final AS400 as400, final Field field, final byte[] tmp) {
 
 		Object value = null;
 
@@ -123,7 +135,7 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 * @throws Exception
 	 */
-	final static Object asAS400Bin8(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) {
+	final static Object asAS400Bin8(final AS400 as400, final Field field, final byte[] tmp) {
 
 		Object value = null;
 
@@ -146,7 +158,7 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 * @throws Exception
 	 */
-	final static Object asAS400UBin1(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) {
+	final static Object asAS400UBin1(final AS400 as400, final Field field, final byte[] tmp) {
 
 		Object value = null;
 
@@ -169,7 +181,7 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 * @throws Exception
 	 */
-	final static Object asAS400UBin2(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) {
+	final static Object asAS400UBin2(final AS400 as400, final Field field, final byte[] tmp) {
 
 		Object value = null;
 
@@ -192,7 +204,7 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 * @throws Exception
 	 */
-	final static Object asAS400UBin4(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) {
+	final static Object asAS400UBin4(final AS400 as400, final Field field, final byte[] tmp) {
 
 		Object value = null;
 
@@ -215,7 +227,7 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 * @throws Exception
 	 */
-	final static Object asAS400UBin8(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) {
+	final static Object asAS400UBin8(final AS400 as400, final Field field, final byte[] tmp) {
 
 		Object value = null;
 
@@ -236,7 +248,7 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 * @throws Exception
 	 */
-	final static Object asAS400Float4(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) {
+	final static Object asAS400Float4(final AS400 as400, final Field field, final byte[] tmp) {
 
 		Object value = null;
 
@@ -259,7 +271,7 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 * @throws Exception
 	 */
-	final static Object asAS400Float8(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) {
+	final static Object asAS400Float8(final AS400 as400, final Field field, final byte[] tmp) {
 
 		Object value = null;
 
@@ -282,11 +294,11 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 * @throws Exception
 	 */
-	final static Object asAS400DecFloat(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) {
+	final static Object asAS400DecFloat(final AS400 as400, final Field field, final int decimal, final byte[] tmp) {
 
 		Object value = null;
 
-		final AS400DecFloat decFloat = new AS400DecFloat(format.decimals());
+		final AS400DecFloat decFloat = new AS400DecFloat(decimal);
 		if (field.getType() == double.class) {
 			value = decFloat.toDouble(tmp);
 		} else if (field.getType() == Double.class) {
@@ -307,11 +319,11 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 * @throws Exception
 	 */
-	final static Object asAS400ZonedDecimal(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) {
+	final static Object asAS400ZonedDecimal(final AS400 as400, final Field field, final int length, final int decimals, final byte[] tmp) {
 
 		Object value = null;
 
-		final AS400ZonedDecimal zoned = new AS400ZonedDecimal(format.length(), format.decimals());
+		final AS400ZonedDecimal zoned = new AS400ZonedDecimal(length, decimals);
 		if (field.getType() == double.class) {
 			value = zoned.toDouble(tmp);
 		} else if (field.getType() == Double.class) {
@@ -334,11 +346,11 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 * @throws Exception
 	 */
-	final static Object asAS400PackedDecimal(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) {
+	final static Object asAS400PackedDecimal(final AS400 as400, final Field field, final int length, final int decimals, final byte[] tmp) {
 
 		Object value = null;
 
-		final AS400PackedDecimal packed = new AS400PackedDecimal(format.length(), format.decimals());
+		final AS400PackedDecimal packed = new AS400PackedDecimal(length, decimals);
 		if (field.getType() == double.class) {
 			value = packed.toDouble(tmp);
 		} else if (field.getType() == Double.class) {
@@ -361,13 +373,13 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 * @throws Exception
 	 */
-	final static Object asAS400Date(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp)  throws Exception {
+	final static Object asAS400Date(final AS400 as400, final Field field, final int format, final byte[] tmp)  throws Exception {
 
 		Object value = null;
 
 		if (field.getType() == Date.class) {
 			//char sep = getDateSeparator(format.format());
-			final AS400Date date = new AS400Date(as400.getTimeZone(), format.format());
+			final AS400Date date = new AS400Date(as400.getTimeZone(), format);
 			value = date.toObject(tmp);
 		} else throw new RuntimeException("Date type supported for AS400Date");
 
@@ -383,12 +395,12 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 * @throws Exception
 	 */
-	final static Object asAS400Time(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp)  throws Exception {
+	final static Object asAS400Time(final AS400 as400, final Field field, final int format, final byte[] tmp)  throws Exception {
 
 		Object value = null;
 
 		if (field.getType() == Time.class) {
-			final AS400Time time = new AS400Time(as400.getTimeZone(), format.format());
+			final AS400Time time = new AS400Time(as400.getTimeZone(), format);
 			value = time.toObject(tmp);
 		} else throw new RuntimeException("Time type supported for AS400Time");
 
@@ -404,7 +416,7 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 * @throws Exception
 	 */
-	final static Object asAS400Timestamp(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) throws Exception {
+	final static Object asAS400Timestamp(final AS400 as400, final Field field, final byte[] tmp) throws Exception {
 
 		Object value = null;
 
@@ -425,8 +437,8 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 * @throws Exception
 	 */
-	final static Object asAS400Text(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp) {
-		final AS400Text text = new AS400Text(format.length(), as400);
+	final static Object asAS400Text(final AS400 as400, final Field field, final int length, final byte[] tmp) {
+		final AS400Text text = new AS400Text(length, as400);
 		final String value = ((String)(text.toObject(tmp))).trim();
 		return value;
 	}
@@ -455,6 +467,45 @@ enum JT400ExtBinaryConverter {
 			return '-';
 		default:
 			return ' ';
+		}
+
+	}
+
+	/**
+	 * Get byte length for standard data types
+	 *
+	 * @param type
+	 * @return
+	 */
+	static public int getDataLength(final int type) {
+
+		switch (type) {
+		case AS400DataType.TYPE_BIN1:
+		case AS400DataType.TYPE_UBIN1:
+			return 1;
+		case AS400DataType.TYPE_BIN2:
+		case AS400DataType.TYPE_UBIN2:
+			return 2;
+		case AS400DataType.TYPE_BIN4:
+		case AS400DataType.TYPE_UBIN4:
+			return 4;
+		case AS400DataType.TYPE_BIN8:
+		case AS400DataType.TYPE_UBIN8:
+			return 8;
+		case AS400DataType.TYPE_FLOAT4:
+			return 4;
+		case AS400DataType.TYPE_FLOAT8:
+			return 8;
+
+		case AS400DataType.TYPE_DATE:
+			return 0;
+		case AS400DataType.TYPE_TIME:
+			return 0;
+		case AS400DataType.TYPE_TIMESTAMP:
+			return 0;
+
+		default:
+			return 0;
 		}
 
 	}

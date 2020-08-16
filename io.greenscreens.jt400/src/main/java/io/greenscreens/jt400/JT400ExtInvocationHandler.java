@@ -55,16 +55,16 @@ final class JT400ExtInvocationHandler<P extends IJT400Params> implements Invocat
 			throw new RuntimeException("Invalid method call");
 		}
 
-		final boolean useFormat = isMethodRetrunFormat(method);
-
 		final AS400 system = getSystem(args);
 		final P values = getValues(args);
 		final Class<P> params = getParams(values);
 
 		call(system, values, params);
 
+		final boolean useFormat = isMethodRetrunFormat(method);
 		if (useFormat) {
-			final ByteBuffer data = getOutput(values, params);
+			final int index = getFormatID(method);
+			final ByteBuffer data = getOutput(values, params, index);
 			final Class<? extends IJT400Format> clazz = getFormat(args);
 			return JT400ExtFormatBuilder.build(as400, clazz, data);
 		}
@@ -82,6 +82,17 @@ final class JT400ExtInvocationHandler<P extends IJT400Params> implements Invocat
 		return 	method.getReturnType() == IJT400Format.class;
 	}
 
+	/**
+	 * Return response format parameter data 
+	 * @param method
+	 * @return
+	 */
+	private int getFormatID(final Method method) {
+		final Id id = method.getReturnType().getAnnotation(Id.class);
+		if (id != null) return id.value();
+		return -1;
+	}
+	
 	/**
 	 * Detect which system to use
 	 *
@@ -164,20 +175,23 @@ final class JT400ExtInvocationHandler<P extends IJT400Params> implements Invocat
 	 * @return
 	 * @throws Exception
 	 */
-	private ByteBuffer getOutput(final P params, final Class<P> args) throws Exception {
+	private ByteBuffer getOutput(final P params, final Class<P> args, final int index) throws Exception {
 
 		// of not plain POJO, might require recursion for parent classes
 		final Field[] fields = args.getDeclaredFields();
 
 		for (Field field : fields) {
-			if (field.getType() == ByteBuffer.class) {
-				if (field.getAnnotation(Id.class) != null) {
-					if (field.getAnnotation(Output.class) != null) {
-						field.setAccessible(true);
-						return (ByteBuffer) field.get(params);
-					}
-				}
+			
+			if (!field.isAnnotationPresent(Output.class)) continue; 
+			if (!field.isAnnotationPresent(Id.class)) continue;
+			if (field.getType() != ByteBuffer.class) continue;
+			
+			final Id id = field.getAnnotation(Id.class);				
+			field.setAccessible(true);
+			if (index < 0 || index == id.value()) {
+				return (ByteBuffer) field.get(params);
 			}
+			
 		}
 
 		return null;
@@ -202,13 +216,13 @@ final class JT400ExtInvocationHandler<P extends IJT400Params> implements Invocat
 
 		final JT400Program jt400PGM = args.getAnnotation(JT400Program.class);
 		final ProgramParameter[] parameters = JT400ExtParameterBuilder.build(as400, params, args);
-
+		
 		if (jt400PGM.service()) {
-			final ServiceProgramCall programCall = JT400ExtUtil.callService(as400, programName.getPath(), parameters, jt400PGM);
+			final ServiceProgramCall programCall = JT400ExtUtil.callService(as400, programName.getPath(), parameters, jt400PGM);			
 			JT400ExtResponseBuilder.build(programCall, params, args);
 		} else {
-			final ProgramCall programCall = JT400ExtUtil.call(as400, programName.getPath(), parameters, jt400PGM);
-			JT400ExtResponseBuilder.build(programCall, params, args);
+			final ProgramCall programCall = JT400ExtUtil.call(as400, programName.getPath(), parameters, jt400PGM);			
+			JT400ExtResponseBuilder.build(programCall, params, args);			
 		}
 
 	}

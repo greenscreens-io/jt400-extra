@@ -12,6 +12,7 @@ import java.io.Writer;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
 
@@ -40,7 +41,7 @@ public enum JT400ExtUtil {
 	 * @param library
 	 * @return
 	 */
-	public static QSYSObjectPathName toQSYSPath(final String program, final String library, final boolean service) {
+	static public QSYSObjectPathName toQSYSPath(final String program, final String library, final boolean service) {
 		final String pgm = Optional.of(program).get().toUpperCase().trim();
 		final String lib = Optional.ofNullable(library).orElse("QSYS").toUpperCase().trim();
 		return new QSYSObjectPathName(lib, pgm, service ? "SRVPGM" : "PGM");
@@ -53,13 +54,31 @@ public enum JT400ExtUtil {
 	 * @param value
 	 * @throws Exception
 	 */
-	public static void setField(final Field field, final Object obj, final Object value) throws Exception {
+	static public void setField(final Field field, final Object obj, final Object value) throws Exception {
 		if (value != null) {
 			field.setAccessible(true);
 			field.set(obj, value);
 		}
 	}
 
+
+	/**
+	 * List all classes constructing format
+	 * @param map
+	 * @param clazz
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	static public <T extends IJT400Format> List<Class<T>> getAllClass(final List<Class<T>> list, final Class<T> clazz) {
+
+		if (clazz.getSuperclass() != null) {
+			getAllClass(list, (Class<T>) clazz.getSuperclass());
+		}
+
+		list.add(clazz);
+
+		return list;
+	}
 	/**
 	 * Generic JT400 program call
 	 * @param as400
@@ -120,14 +139,14 @@ public enum JT400ExtUtil {
 
 		return programCall;
 	}
-
+	
 	/**
 	 * Get length of provided data format
 	 * @param <T>
 	 * @param format
 	 * @return
 	 */
-	public static <T extends IJT400Format> int getFormatLength(final Class<T> format) {
+	static public <T extends IJT400Format> int getFormatLength(final Class<T> format) {
 		final JT400Format fmt = format.getAnnotation(JT400Format.class);
 		if (fmt == null) return 0;
 		return fmt.length();
@@ -140,7 +159,7 @@ public enum JT400ExtUtil {
 	 * @param len
 	 * @return
 	 */
-	final static public byte[] getBytesFrom(final ByteBuffer buffer, final int position, final int len) {
+	static public byte[] getBytesFrom(final ByteBuffer buffer, final int position, final int len) {
 		final byte [] data = new byte[len];
 		buffer.rewind();
 		buffer.position(position);
@@ -155,7 +174,7 @@ public enum JT400ExtUtil {
 	 * @param params
 	 * @return
 	 */
-	public static <T extends IJT400Format, K extends IJT400Params> boolean contains(Class<T> format, final Class<K> params) {
+	static public <T extends IJT400Format, K extends IJT400Params> boolean contains(Class<T> format, final Class<K> params) {
 
 		final Class<? extends IJT400Format>[] formats = params.getAnnotation(JT400Program.class).formats();
 
@@ -231,14 +250,23 @@ public enum JT400ExtUtil {
 		return writer.toString();
 	}
 
-	private static final byte[] HEX_ARRAY = "0123456789ABCDEF".getBytes();
+	static private final byte[] HEX_ARRAY = "0123456789ABCDEF".getBytes();
 
+	/**
+	 * Convert ByteBuffer to hex string
+	 * @param buffer
+	 * @return
+	 */
+	static public String bytesToHex(final ByteBuffer buffer) {
+		return bytesToHex(buffer.array());
+	}
+	
 	/**
 	 * Convert bytes to hex string
 	 * @param bytes
 	 * @return
 	 */
-	public static String bytesToHex(byte[] bytes) {
+	static public String bytesToHex(byte[] bytes) {
 
 		final byte[] hexChars = new byte[bytes.length * 2];
 
@@ -252,11 +280,20 @@ public enum JT400ExtUtil {
 	}
 
 	/**
+	 * Convert hex string to ByteBuffer
+	 * @param s
+	 * @return
+	 */
+	static public ByteBuffer hexToBuffer(final String s) {
+		return ByteBuffer.wrap(hexToBytes(s));
+	}
+	
+	/**
 	 * Convert hex string to byte array
 	 * @param s
 	 * @return
 	 */
-	public static byte[] hexToBytes(final String s) {
+	static public byte[] hexToBytes(final String s) {
 
 		final int len = s.length();
 
@@ -269,5 +306,5 @@ public enum JT400ExtUtil {
 
 		return data;
 	}
-
+	
 }

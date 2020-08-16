@@ -67,7 +67,7 @@ public final class Builder {
 				.withReceiver(ByteBuffer.allocate(len))
 				.withLength(len)
 				.withFormat(clazz.getSimpleName())
-				//.withReceiver(ByteBuffer.allocate(0))
+				.withErrorCode(ByteBuffer.allocate(0))
 				.build();
 	}
 

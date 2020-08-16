@@ -6,8 +6,10 @@
  */
 package io.greenscreens.jt400.programs.qsys.qdcrdevd;
 
+import io.greenscreens.jt400.annotations.Id;
 import io.greenscreens.jt400.annotations.JT400Format;
 
+@Id(value = 0)
 @JT400Format(length = 177)
 public class DEVD0300 extends DEVD0100 {
 
@@ -101,12 +103,11 @@ public class DEVD0300 extends DEVD0100 {
 
 	@Override
 	public String toString() {
-		return "DEVD0300 [remoteLocationName=" + remoteLocationName + ", controllerName=" + controllerName
+		return super.toString() + "\n" +
+		"DEVD0300 [remoteLocationName=" + remoteLocationName + ", controllerName=" + controllerName
 				+ ", jobName=" + jobName + ", userName=" + userName + ", jobNumber=" + jobNumber + ", queueName="
-				+ queueName + ", queueLibrary=" + queueLibrary + ", lastActivity=" + lastActivity + ", bytesReturned="
-				+ bytesReturned + ", bytesAvailable=" + bytesAvailable + ", date=" + date + ", time=" + time
-				+ ", deviceName=" + deviceName + ", deviceCategory=" + deviceCategory + ", onlineAtIPL=" + onlineAtIPL
-				+ ", description=" + description + ", reserve=" + reserve + "]";
+				+ queueName + ", queueLibrary=" + queueLibrary + ", lastActivity=" + lastActivity + "]";
 	}
+
 
 }
