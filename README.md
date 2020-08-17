@@ -1,5 +1,5 @@
 
-# [JT400 Extra Pack](https://blog.greenscreens.io/green-screens-jt400-extension-pack).
+# [JT400 Extra Pack](https://greenscreens-io.github.io/jt400-extra/).
 
 Green Screens JT400 Extension Pack - is a module on top of JT400 improving usage of JT400 ProgramCall class by helping to map IBM i program parameters and response formats. 
 
