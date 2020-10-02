@@ -1,7 +1,8 @@
 
 # [JT400 Extra Pack](https://greenscreens-io.github.io/jt400-extra/).
 
-![Java CI with Maven](https://github.com/greenscreens-io/jt400-extra/workflows/Java%20CI%20with%20Maven/badge.svg?branch=master)
+![Java CI with Maven](https://github.com/greenscreens-io/jt400-extra/workflows/Java%20CI%20with%20Maven/badge.svg?branch=master) 
+![GitHub](https://img.shields.io/github/license/greenscreens-io/jt400-extra?style=plastic)
 
 Green Screens JT400 Extension Pack - is a module on top of JT400 improving usage of JT400 ProgramCall class by helping to map IBM i program parameters and response formats. 
 
