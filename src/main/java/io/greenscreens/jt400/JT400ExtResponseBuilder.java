@@ -48,19 +48,22 @@ enum JT400ExtResponseBuilder {
 		Id arg = null;
 
 		for (Field field : fields) {
+			
 			arg = field.getAnnotation(Id.class);
 			output = field.getAnnotation(Output.class);
+			
 			if (arg == null) continue;
 			if (output == null) continue;
+
 			build(programCall, params, args, field);
 
 		}
-
+		
 	}
 
 	/**
 	 * Fill output service program parameters with received values
-	 *
+	 * 
 	 * @param programCall
 	 * @param params
 	 * @param args
@@ -69,18 +72,21 @@ enum JT400ExtResponseBuilder {
 	final static public <K extends IJT400Params> void build(final ServiceProgramCall programCall, final K params, final Class<K> args) throws Exception {
 
 		if (programCall.getReturnValueFormat() == ServiceProgramCall.RETURN_INTEGER) {
+			
 			final Field retVal = args.getField("returnValue");
+			
 			if (retVal != null) {
 				if (retVal.getType() == int.class) {
 					final int val = programCall.getIntegerReturnValue();
-					JT400ExtUtil.setField(retVal, params, val);
+					JT400ExtUtil.setField(retVal, params, val);	
 				}
 			}
+			
 		}
-
+		
 		build((ProgramCall) programCall, params, args);
 	}
-
+	
 	/**
 	 *
 	 * @param programCall
@@ -104,12 +110,12 @@ enum JT400ExtResponseBuilder {
 		if (response == null) return;
 
 		field.setAccessible(true);
-
+		
 		final TYPE type = getFieldType(field);
 		Object value = null;
 
 		switch (type) {
-			case BUFFER:
+			case BUFFER: 
 				final ByteBuffer data = (ByteBuffer) field.get(params);
 				if (data == null) {
 					value = ByteBuffer.wrap(response);
@@ -117,41 +123,43 @@ enum JT400ExtResponseBuilder {
 					data.rewind();
 					data.put(response);
 				}
-				break;
-			case BYTE_ARRAY:
+				break;		
+			case BYTE_ARRAY: 
 				value = response;
-				break;
-			case DEFAULT:
+				break;		
+			case DEFAULT: 
 				value = getValue(programCall.getSystem(), field, jt400Arg, response);
-				break;
+				break;		
 			default:
-
+	
 		}
 
 		JT400ExtUtil.setField(field, params, value);
 	}
-
+	
 	/**
 	 * Field output format
 	 * @param field
 	 * @return
 	 */
 	final static private TYPE getFieldType(final Field field) {
-
-		if (field.getType() == ByteBuffer.class) {
+		
+		final Class<?> clazz = field.getType();
+		
+		if (clazz == ByteBuffer.class) {
 			return TYPE.BUFFER;
 		}
-
-		if (field.getType() == byte[].class) {
+		
+		if (clazz == byte[].class) {
 			return TYPE.BYTE_ARRAY;
 		}
-
-		if (!field.getType().isArray()) {
+		
+		if (!clazz.isArray()) {
 			return TYPE.DEFAULT;
 		}
-
+		
 		return TYPE.UNKNOWN;
-
+			
 	}
 
 	/**

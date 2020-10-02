@@ -88,6 +88,15 @@ public enum JT400ExtUtil {
 	 * @throws Exception
 	 */
 	static public ProgramCall call(final AS400 as400, final String program, final ProgramParameter[] parameters, final JT400Program ann) throws Exception {
+		
+		if (ann.service()) {
+			return callService(as400, program, parameters, ann);			
+		} else {
+			return callProgram(as400, program, parameters, ann);			
+		}
+	}
+	
+	static public ProgramCall callProgram(final AS400 as400, final String program, final ProgramParameter[] parameters, final JT400Program ann) throws Exception {
 
 		if (as400 == null) {
 			throw new RuntimeException("Not all definitions available!");

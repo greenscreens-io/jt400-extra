@@ -131,7 +131,8 @@ enum JT400ExtParameterBuilder {
 		final Input input = field.getAnnotation(Input.class);
 		final Output output = field.getAnnotation(Output.class);
 		final JT400Argument ann = field.getAnnotation(JT400Argument.class);
-
+		final Class<?> clazz = field.getType();
+		
 		if (ann == null) return null;
 
 		Object val = null;
@@ -245,19 +246,19 @@ enum JT400ExtParameterBuilder {
 
 			int lena = ann.length();
 
-			if (field.getType() == ByteBuffer.class) {
+			if (clazz == ByteBuffer.class) {
 				ByteBuffer data = getFieldValue(obj, field);
 				if (data == null) data = ByteBuffer.allocate(ann.length());
 				val = data.array();
 				lena = data.capacity();
-			} else if (field.getType() == byte[].class) {
+			} else if (clazz == byte[].class) {
 				byte [] data = getFieldValue(obj, field);
 				if (data == null) data = new byte[ann.length()];
 				val = data;
 				lena = data.length;
 			} else {
 				val = new byte[ann.length()];
-				lena = ann.length();
+				lena = ann.length();				
 			}
 
 			dataType = new AS400ByteArray(lena);
@@ -298,7 +299,7 @@ enum JT400ExtParameterBuilder {
 			}
 		}
 
-		if (isInputOutput) {
+		if (isInputOutput) {			
 			parameter.setInputData(dataType.toBytes(val));
 			parameter.setOutputDataLength(dataType.getByteLength());
 		}

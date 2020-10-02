@@ -15,7 +15,6 @@ import com.ibm.as400.access.AS400;
 import com.ibm.as400.access.ProgramCall;
 import com.ibm.as400.access.ProgramParameter;
 import com.ibm.as400.access.QSYSObjectPathName;
-import com.ibm.as400.access.ServiceProgramCall;
 
 import io.greenscreens.jt400.annotations.Id;
 import io.greenscreens.jt400.annotations.JT400Program;
@@ -62,6 +61,7 @@ final class JT400ExtInvocationHandler<P extends IJT400Params> implements Invocat
 		call(system, values, params);
 
 		final boolean useFormat = isMethodRetrunFormat(method);
+		
 		if (useFormat) {
 			final int index = getFormatID(method);
 			final ByteBuffer data = getOutput(values, params, index);
@@ -188,6 +188,7 @@ final class JT400ExtInvocationHandler<P extends IJT400Params> implements Invocat
 			
 			final Id id = field.getAnnotation(Id.class);				
 			field.setAccessible(true);
+			
 			if (index < 0 || index == id.value()) {
 				return (ByteBuffer) field.get(params);
 			}
@@ -216,14 +217,9 @@ final class JT400ExtInvocationHandler<P extends IJT400Params> implements Invocat
 
 		final JT400Program jt400PGM = args.getAnnotation(JT400Program.class);
 		final ProgramParameter[] parameters = JT400ExtParameterBuilder.build(as400, params, args);
-		
-		if (jt400PGM.service()) {
-			final ServiceProgramCall programCall = JT400ExtUtil.callService(as400, programName.getPath(), parameters, jt400PGM);			
-			JT400ExtResponseBuilder.build(programCall, params, args);
-		} else {
-			final ProgramCall programCall = JT400ExtUtil.call(as400, programName.getPath(), parameters, jt400PGM);			
-			JT400ExtResponseBuilder.build(programCall, params, args);			
-		}
+		final ProgramCall programCall = JT400ExtUtil.call(as400, programName.getPath(), parameters, jt400PGM);
+
+		JT400ExtResponseBuilder.build(programCall, params, args);			
 
 	}
 
