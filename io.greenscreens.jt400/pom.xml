@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.greenscreens.jt400</groupId>
 	<artifactId>jt400-extra</artifactId>
-	<version>1.2.0</version>
+	<version>1.2.1</version>
 
 	<name>JT400 Extra Pack</name>
 	<url>https://github.io/greenscreens-io/jt400-extra</url>
