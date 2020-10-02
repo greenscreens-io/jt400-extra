@@ -256,7 +256,9 @@ enum JT400ExtFormatBuilder {
 			return;
 		}
 
-		final ByteBuffer data = buffer.slice(format.offset(), len);
+		// JAVA 14+
+		//final ByteBuffer data = buffer.slice(format.offset(), len);
+		final ByteBuffer data = slice(buffer, format.offset(), len);
 		final Class<? extends IJT400Format> clazz = (Class<? extends IJT400Format>) field.getType();
 		final Object value  = JT400ExtFormatBuilder.build(as400, clazz, data);
 
@@ -292,10 +294,29 @@ enum JT400ExtFormatBuilder {
 			length = JT400ExtBinaryConverter.getIntValue(buffer, ref.length());
 
 			if (offset > 0 && length > 0) {
-				data = buffer.slice(offset, length);
+				// JAVA 14+
+				// data = buffer.slice(offset, length);
+				data = slice(buffer, offset, length);
 			}
 		}
 		
+		return data;
+	}
+	
+	/**
+	 * ByteBuffer slice support for pre JAVA14
+	 * @param buffer
+	 * @param offset
+	 * @param length
+	 * @return
+	 */
+	static private ByteBuffer slice(final ByteBuffer buffer, final int offset, final int length) {
+		if ( buffer.capacity() < offset + length ) {
+			throw new RuntimeException("ByteBuffer too small, check JT400Format definition.");
+		}
+		buffer.position(offset);
+		final ByteBuffer data = buffer.slice();
+		data.limit(length);
 		return data;
 	}
 	
@@ -429,7 +450,11 @@ enum JT400ExtFormatBuilder {
 		JT400Format format = null;
 
 		if (field.getType().isArray()) {
-			format = field.getType().componentType().getAnnotation(JT400Format.class);
+			// For some reason, Eclipse report this as an error in Java < 14+
+			// Needed to refactor in 2-line block.
+			//format = field.getType().componentType().getAnnotation(JT400Format.class);
+			final Class<?> clazz = field.getType().getComponentType();
+			format = clazz.getAnnotation(JT400Format.class);
 		} else {
 			format = field.getType().getAnnotation(JT400Format.class);
 		}

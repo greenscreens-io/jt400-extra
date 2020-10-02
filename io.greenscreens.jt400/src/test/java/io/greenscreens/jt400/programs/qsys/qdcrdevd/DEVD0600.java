@@ -25,7 +25,7 @@ public class DEVD0600 extends DEVD0100 {
 	@JT400Format(offset = 902, length = 10)
 	protected String userName;
 
-	@JT400Format(offset = 912, length = 10)
+	@JT400Format(offset = 912, length = 6)
 	protected String jobNumber;
 
 	@JT400Format(offset = 918, length = 10)
