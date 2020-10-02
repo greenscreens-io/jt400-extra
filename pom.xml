@@ -13,7 +13,27 @@
 		<url>https://www.greenscreens.io</url>
 	</organization>
 	<description>Green Screens JT400 Extension Pack - is a module on top of JT400 improving usage of JT400 ProgramCall class by helping to map IBM i program parameters and response formats. </description>
-	
+
+    <licenses>
+        <license>
+            <name>MIT</name>
+            <url>https://github.com/greenscreens-io/jt400-extra/blob/master/LICENSE</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>scm:git:git@github.com:greenscreens-io/jt400-extra.git</connection>
+        <developerConnection>scm:git:git@github.com:greenscreens-io/jt400-extra.git</developerConnection>
+        <url>https://github.com/greenscreens-io/jt400-extra</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <issueManagement>
+        <system>Github</system>
+        <url>https://github.com/greenscreens-io/jt400-extra/issues</url>
+    </issueManagement>
+
     <distributionManagement>
        <repository>
          <id>github</id>
