@@ -1,6 +1,8 @@
 
 # [JT400 Extra Pack](https://greenscreens-io.github.io/jt400-extra/).
 
+![Java CI with Maven](https://github.com/greenscreens-io/jt400-extra/workflows/Java%20CI%20with%20Maven/badge.svg?branch=master)
+
 Green Screens JT400 Extension Pack - is a module on top of JT400 improving usage of JT400 ProgramCall class by helping to map IBM i program parameters and response formats. 
 
 We were not happy with PCML approach as neither with writing a lot of manual specific code required for calling IBM i program, so we developed our own engine based on Java Dynamic Proxy and InvocationHandler technology. 
