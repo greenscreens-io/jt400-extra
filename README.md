@@ -5,7 +5,6 @@
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/greenscreens-io/jt400-extra?style=plastic)
 ![GitHub](https://img.shields.io/github/license/greenscreens-io/jt400-extra?style=plastic)
 
-[![Maven Package](https://github.com/greenscreens-io/jt400-extra/workflows/Maven%20Package/badge.svg)](https://github.com/greenscreens-io/jt400-extra/packages) 
 ![GitHub Last Commit](https://img.shields.io/github/last-commit/greenscreens-io/jt400-extra?style=plastic)
 ![GitHub Release Date](https://img.shields.io/github/release-date/greenscreens-io/jt400-extra?style=plastic)
 
