@@ -2,9 +2,9 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>io.greenscreens.jt400</groupId>
+	<groupId>io.greenscreens</groupId>
 	<artifactId>jt400-extra</artifactId>
-	<version>1.2.1</version>
+	<version>1.2.2</version>
 
 	<name>JT400 Extra Pack</name>
 	<url>https://github.io/greenscreens-io/jt400-extra</url>
