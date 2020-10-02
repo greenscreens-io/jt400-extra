@@ -5,6 +5,8 @@
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/greenscreens-io/jt400-extra?style=plastic)
 ![GitHub](https://img.shields.io/github/license/greenscreens-io/jt400-extra?style=plastic)
 
+![GitHub Last Commit](https://img.shields.io/github/last-commit/greenscreens-io/jt400-extra?style=plastic)
+![GitHub Release Date](https://img.shields.io/github/release-date/greenscreens-io/jt400-extra?style=plastic)
 
 Green Screens JT400 Extension Pack - is a module on top of JT400 improving usage of JT400 ProgramCall class by helping to map IBM i program parameters and response formats. 
 
