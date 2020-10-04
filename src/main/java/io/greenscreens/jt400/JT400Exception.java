@@ -20,7 +20,7 @@ public class JT400Exception extends Exception {
 
 	private static final long serialVersionUID = 1L;
 
-	final private AS400Message [] errors;
+	private final AS400Message [] errors;
 
 	JT400Exception(final AS400Message[] errors) {
 		super(JT400ExtUtil.getErrors(errors));

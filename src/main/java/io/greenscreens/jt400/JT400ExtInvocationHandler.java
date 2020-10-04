@@ -27,8 +27,8 @@ import io.greenscreens.jt400.interfaces.IJT400Params;
  */
 final class JT400ExtInvocationHandler<P extends IJT400Params> implements InvocationHandler {
 
-	final private AS400 as400;
-	final private QSYSObjectPathName programName;
+	private final AS400 as400;
+	private final QSYSObjectPathName programName;
 	private Class<P> input;
 
 	/**
@@ -182,12 +182,10 @@ final class JT400ExtInvocationHandler<P extends IJT400Params> implements Invocat
 
 		for (Field field : fields) {
 			
-			if (!field.isAnnotationPresent(Output.class)) continue; 
-			if (!field.isAnnotationPresent(Id.class)) continue;
-			if (field.getType() != ByteBuffer.class) continue;
+			if (!isOutputField(field)) continue; 
 			
-			final Id id = field.getAnnotation(Id.class);				
-			field.setAccessible(true);
+			final Id id = field.getAnnotation(Id.class);
+			JT400ExtUtil.enableField(field);
 			
 			if (index < 0 || index == id.value()) {
 				return (ByteBuffer) field.get(params);
@@ -198,6 +196,13 @@ final class JT400ExtInvocationHandler<P extends IJT400Params> implements Invocat
 		return null;
 	}
 
+	private boolean isOutputField(final Field field) {
+		if (!field.isAnnotationPresent(Output.class)) return false; 
+		if (!field.isAnnotationPresent(Id.class)) return false;
+		if (field.getType() != ByteBuffer.class) return false;
+		return true;
+	}
+	
 	/**
 	 * Make a call to remote program by converting Java class definition into JT400 call and
 	 * converting byte response into Java class based on JT400 definition format

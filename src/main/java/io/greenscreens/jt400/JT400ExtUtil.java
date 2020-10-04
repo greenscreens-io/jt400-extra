@@ -10,11 +10,16 @@ import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
+
+import org.slf4j.LoggerFactory;
 
 import com.ibm.as400.access.AS400;
 import com.ibm.as400.access.AS400Message;
@@ -34,6 +39,9 @@ import io.greenscreens.jt400.interfaces.IJT400Params;
 public enum JT400ExtUtil {
 ;
 
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(JT400ExtUtil.class);
+
+
 	/**
 	 * Create JT400 program call path
 	 *
@@ -41,7 +49,7 @@ public enum JT400ExtUtil {
 	 * @param library
 	 * @return
 	 */
-	static public QSYSObjectPathName toQSYSPath(final String program, final String library, final boolean service) {
+	public static  QSYSObjectPathName toQSYSPath(final String program, final String library, final boolean service) {
 		final String pgm = Optional.of(program).get().toUpperCase().trim();
 		final String lib = Optional.ofNullable(library).orElse("QSYS").toUpperCase().trim();
 		return new QSYSObjectPathName(lib, pgm, service ? "SRVPGM" : "PGM");
@@ -54,13 +62,31 @@ public enum JT400ExtUtil {
 	 * @param value
 	 * @throws Exception
 	 */
-	static public void setField(final Field field, final Object obj, final Object value) throws Exception {
-		if (value != null) {
-			field.setAccessible(true);
-			field.set(obj, value);
-		}
+	public static  void setField(final Field field, final Object obj, final Object value) throws Exception {
+		
+		if (value == null) return;
+		
+        enableField(field);        
+        field.set(obj, value);
+
 	}
 
+	/**
+	 * Use reflection to set private field accessible 
+	 * @param field
+	 */
+	public static  void enableField(final Field field) {
+
+		final int modifiers = field.getModifiers();
+		if (Modifier.isPublic(modifiers)) return;
+		
+        AccessController.doPrivileged(new PrivilegedAction<Object>() {
+        	public Object run() {
+    			field.setAccessible(true);	    			
+                return null; 
+            }
+    });
+	}
 
 	/**
 	 * List all classes constructing format
@@ -69,7 +95,7 @@ public enum JT400ExtUtil {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	static public <T extends IJT400Format> List<Class<T>> getAllClass(final List<Class<T>> list, final Class<T> clazz) {
+	public static  <T extends IJT400Format> List<Class<T>> getAllClass(final List<Class<T>> list, final Class<T> clazz) {
 
 		if (clazz.getSuperclass() != null) {
 			getAllClass(list, (Class<T>) clazz.getSuperclass());
@@ -87,7 +113,7 @@ public enum JT400ExtUtil {
 	 * @return
 	 * @throws Exception
 	 */
-	static public ProgramCall call(final AS400 as400, final String program, final ProgramParameter[] parameters, final JT400Program ann) throws Exception {
+	public static  ProgramCall call(final AS400 as400, final String program, final ProgramParameter[] parameters, final JT400Program ann) throws Exception {
 		
 		if (ann.service()) {
 			return callService(as400, program, parameters, ann);			
@@ -96,7 +122,7 @@ public enum JT400ExtUtil {
 		}
 	}
 	
-	static public ProgramCall callProgram(final AS400 as400, final String program, final ProgramParameter[] parameters, final JT400Program ann) throws Exception {
+	public static  ProgramCall callProgram(final AS400 as400, final String program, final ProgramParameter[] parameters, final JT400Program ann) throws Exception {
 
 		if (as400 == null) {
 			throw new RuntimeException("Not all definitions available!");
@@ -126,7 +152,7 @@ public enum JT400ExtUtil {
 	 * @return
 	 * @throws Exception
 	 */
-	static public ServiceProgramCall callService(final AS400 as400, final String program, final ProgramParameter[] parameters, final JT400Program ann) throws Exception {
+	public static  ServiceProgramCall callService(final AS400 as400, final String program, final ProgramParameter[] parameters, final JT400Program ann) throws Exception {
 
 		if (as400 == null) {
 			throw new RuntimeException("Not all definitions available!");
@@ -155,7 +181,7 @@ public enum JT400ExtUtil {
 	 * @param format
 	 * @return
 	 */
-	static public <T extends IJT400Format> int getFormatLength(final Class<T> format) {
+	public static  <T extends IJT400Format> int getFormatLength(final Class<T> format) {
 		final JT400Format fmt = format.getAnnotation(JT400Format.class);
 		if (fmt == null) return 0;
 		return fmt.length();
@@ -168,7 +194,7 @@ public enum JT400ExtUtil {
 	 * @param len
 	 * @return
 	 */
-	static public byte[] getBytesFrom(final ByteBuffer buffer, final int position, final int len) {
+	public static  byte[] getBytesFrom(final ByteBuffer buffer, final int position, final int len) {
 		final byte [] data = new byte[len];
 		buffer.rewind();
 		buffer.position(position);
@@ -183,7 +209,7 @@ public enum JT400ExtUtil {
 	 * @param params
 	 * @return
 	 */
-	static public <T extends IJT400Format, K extends IJT400Params> boolean contains(Class<T> format, final Class<K> params) {
+	public static  <T extends IJT400Format, K extends IJT400Params> boolean contains(Class<T> format, final Class<K> params) {
 
 		final Class<? extends IJT400Format>[] formats = params.getAnnotation(JT400Program.class).formats();
 
@@ -201,7 +227,7 @@ public enum JT400ExtUtil {
 	 * Print JT400 errors to defined logger
 	 * @param messages
 	 */
-	static public void printErrors(final AS400Message [] messages, final Logger logger) {
+	public static  void printErrors(final AS400Message [] messages, final Logger logger) {
 		for (AS400Message message : messages) {
 			logger.warning(String.format(" %s : %s", message.getID(), message.getText()));
 		}
@@ -211,15 +237,16 @@ public enum JT400ExtUtil {
 	 * Print JT400 errors to defined output stream
 	 * @param messages
 	 */
-	static public void printErrors(final AS400Message [] messages, final OutputStream stream) {
+	public static  void printErrors(final AS400Message [] messages, final OutputStream stream) {
 
 		try {
 			for (AS400Message message : messages) {
-				byte [] bytes = String.format(" %s : %s\n", message.getID(), message.getText()).getBytes();
+				byte [] bytes = String.format(" %s : %s%n", message.getID(), message.getText()).getBytes();
 				stream.write(bytes);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOG.error(e.getMessage());
+			LOG.debug(e.getMessage(), e);
 		}
 	}
 
@@ -227,15 +254,16 @@ public enum JT400ExtUtil {
 	 * Print JT400 errors to defined writer
 	 * @param messages
 	 */
-	static public void printErrors(final AS400Message [] messages, final Writer writer) {
+	public static  void printErrors(final AS400Message [] messages, final Writer writer) {
 
 		try {
 			for (AS400Message message : messages) {
-				String line = String.format(" %s : %s\n", message.getID(), message.getText());
+				String line = String.format(" %s : %s%n", message.getID(), message.getText());
 				writer.write(line);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOG.error(e.getMessage());
+			LOG.debug(e.getMessage(), e);
 		}
 	}
 
@@ -243,7 +271,7 @@ public enum JT400ExtUtil {
 	 * Print JT400 errors to default console output
 	 * @param messages
 	 */
-	static public void printErrors(final AS400Message [] messages) {
+	public static void printErrors(final AS400Message [] messages) {
 		printErrors(messages, System.out);
 	}
 
@@ -252,21 +280,21 @@ public enum JT400ExtUtil {
 	 * @param messages
 	 * @return
 	 */
-	static public String getErrors(final AS400Message [] messages) {
+	public static  String getErrors(final AS400Message [] messages) {
 		final StringWriter writer = new StringWriter();
 		printErrors(messages, writer);
 		writer.flush();
 		return writer.toString();
 	}
 
-	static private final byte[] HEX_ARRAY = "0123456789ABCDEF".getBytes();
+	private static  final byte[] HEX_ARRAY = "0123456789ABCDEF".getBytes();
 
 	/**
 	 * Convert ByteBuffer to hex string
 	 * @param buffer
 	 * @return
 	 */
-	static public String bytesToHex(final ByteBuffer buffer) {
+	public static  String bytesToHex(final ByteBuffer buffer) {
 		return bytesToHex(buffer.array());
 	}
 	
@@ -275,7 +303,7 @@ public enum JT400ExtUtil {
 	 * @param bytes
 	 * @return
 	 */
-	static public String bytesToHex(byte[] bytes) {
+	public static  String bytesToHex(byte[] bytes) {
 
 		final byte[] hexChars = new byte[bytes.length * 2];
 
@@ -293,7 +321,7 @@ public enum JT400ExtUtil {
 	 * @param s
 	 * @return
 	 */
-	static public ByteBuffer hexToBuffer(final String s) {
+	public static  ByteBuffer hexToBuffer(final String s) {
 		return ByteBuffer.wrap(hexToBytes(s));
 	}
 	
@@ -302,7 +330,7 @@ public enum JT400ExtUtil {
 	 * @param s
 	 * @return
 	 */
-	static public byte[] hexToBytes(final String s) {
+	public static  byte[] hexToBytes(final String s) {
 
 		final int len = s.length();
 

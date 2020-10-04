@@ -37,7 +37,7 @@ enum JT400ExtResponseBuilder {
 	 * @return
 	 * @throws Exception
 	 */
-	final static public <K extends IJT400Params> void build(final ProgramCall programCall, final K params, final Class<K> args) throws Exception {
+	public static  <K extends IJT400Params> void build(final ProgramCall programCall, final K params, final Class<K> args) throws Exception {
 
 		final ProgramParameter[] argList = programCall.getParameterList();
 		final Field[] fields = args.getDeclaredFields();
@@ -52,8 +52,7 @@ enum JT400ExtResponseBuilder {
 			arg = field.getAnnotation(Id.class);
 			output = field.getAnnotation(Output.class);
 			
-			if (arg == null) continue;
-			if (output == null) continue;
+			if (arg == null || output == null) continue;
 
 			build(programCall, params, args, field);
 
@@ -69,17 +68,15 @@ enum JT400ExtResponseBuilder {
 	 * @param args
 	 * @throws Exception
 	 */
-	final static public <K extends IJT400Params> void build(final ServiceProgramCall programCall, final K params, final Class<K> args) throws Exception {
+	public static    <K extends IJT400Params> void build(final ServiceProgramCall programCall, final K params, final Class<K> args) throws Exception {
 
 		if (programCall.getReturnValueFormat() == ServiceProgramCall.RETURN_INTEGER) {
 			
 			final Field retVal = args.getField("returnValue");
 			
-			if (retVal != null) {
-				if (retVal.getType() == int.class) {
+			if (retVal != null && retVal.getType() == int.class) {
 					final int val = programCall.getIntegerReturnValue();
 					JT400ExtUtil.setField(retVal, params, val);	
-				}
 			}
 			
 		}
@@ -95,7 +92,7 @@ enum JT400ExtResponseBuilder {
 	 * @param field
 	 * @throws Exception
 	 */
-	final static public <K extends IJT400Params> void build(final ProgramCall programCall, final K params, final Class<K> args, final Field field) throws Exception {
+	public static    <K extends IJT400Params> void build(final ProgramCall programCall, final K params, final Class<K> args, final Field field) throws Exception {
 
 		final JT400Argument jt400Arg = field.getAnnotation(JT400Argument.class);
 		final Id id = field.getAnnotation(Id.class);
@@ -109,7 +106,7 @@ enum JT400ExtResponseBuilder {
 
 		if (response == null) return;
 
-		field.setAccessible(true);
+		JT400ExtUtil.enableField(field);
 		
 		final TYPE type = getFieldType(field);
 		Object value = null;
@@ -142,7 +139,7 @@ enum JT400ExtResponseBuilder {
 	 * @param field
 	 * @return
 	 */
-	final static private TYPE getFieldType(final Field field) {
+	private static  TYPE getFieldType(final Field field) {
 		
 		final Class<?> clazz = field.getType();
 		
@@ -172,7 +169,7 @@ enum JT400ExtResponseBuilder {
 	 * @return
 	 * @throws Exception
 	 */
-	final static private Object getValue(final AS400 as400, final Field field, final JT400Argument arg, final byte[] tmp)  throws Exception  {
+	private static  Object getValue(final AS400 as400, final Field field, final JT400Argument arg, final byte[] tmp)  throws Exception  {
 
 		Object value = null;
 
@@ -180,57 +177,57 @@ enum JT400ExtResponseBuilder {
 
 		switch (type) {
 		case AS400DataType.TYPE_BIN1:
-			value = JT400ExtBinaryConverter.asAS400Bin1(as400, field, tmp);
+			value = JT400ExtBinaryConverter.asAS400Bin1(field, tmp);
 			break;
 		case AS400DataType.TYPE_BIN2:
-			value = JT400ExtBinaryConverter.asAS400Bin2(as400, field, tmp);
+			value = JT400ExtBinaryConverter.asAS400Bin2(field, tmp);
 			break;
 		case AS400DataType.TYPE_BIN4:
-			value = JT400ExtBinaryConverter.asAS400Bin4(as400, field, tmp);
+			value = JT400ExtBinaryConverter.asAS400Bin4(field, tmp);
 			break;
 		case AS400DataType.TYPE_BIN8:
-			value = JT400ExtBinaryConverter.asAS400Bin8(as400, field, tmp);
+			value = JT400ExtBinaryConverter.asAS400Bin8(field, tmp);
 			break;
 
 		case AS400DataType.TYPE_UBIN1:
-			value = JT400ExtBinaryConverter.asAS400UBin1(as400, field, tmp);
+			value = JT400ExtBinaryConverter.asAS400UBin1(field, tmp);
 			break;
 		case AS400DataType.TYPE_UBIN2:
-			value = JT400ExtBinaryConverter.asAS400UBin2(as400, field, tmp);
+			value = JT400ExtBinaryConverter.asAS400UBin2(field, tmp);
 			break;
 		case AS400DataType.TYPE_UBIN4:
-			value = JT400ExtBinaryConverter.asAS400UBin4(as400, field, tmp);
+			value = JT400ExtBinaryConverter.asAS400UBin4(field, tmp);
 			break;
 		case AS400DataType.TYPE_UBIN8:
-			value = JT400ExtBinaryConverter.asAS400UBin8(as400, field, tmp);
+			value = JT400ExtBinaryConverter.asAS400UBin8(field, tmp);
 			break;
 
 		case AS400DataType.TYPE_FLOAT4:
-			value = JT400ExtBinaryConverter.asAS400Float4(as400, field, tmp);
+			value = JT400ExtBinaryConverter.asAS400Float4(field, tmp);
 			break;
 		case AS400DataType.TYPE_FLOAT8:
-			value = JT400ExtBinaryConverter.asAS400Float8(as400, field, tmp);
+			value = JT400ExtBinaryConverter.asAS400Float8(field, tmp);
 			break;
 
 		case AS400DataType.TYPE_DECFLOAT:
-			value = JT400ExtBinaryConverter.asAS400DecFloat(as400, field, arg.decimals(), tmp);
+			value = JT400ExtBinaryConverter.asAS400DecFloat(field, arg.decimals(), tmp);
 			break;
 
 		case AS400DataType.TYPE_ZONED:
-			value = JT400ExtBinaryConverter.asAS400ZonedDecimal(as400, field, arg.length(), arg.decimals(), tmp);
+			value = JT400ExtBinaryConverter.asAS400ZonedDecimal(field, arg.length(), arg.decimals(), tmp);
 			break;
 		case AS400DataType.TYPE_PACKED:
-			value = JT400ExtBinaryConverter.asAS400PackedDecimal(as400, field, arg.length(), arg.decimals(), tmp);
+			value = JT400ExtBinaryConverter.asAS400PackedDecimal(field, arg.length(), arg.decimals(), tmp);
 			break;
 
 		case AS400DataType.TYPE_DATE:
-			value = JT400ExtBinaryConverter.asAS400Date(as400, field, arg.format(), tmp);
+			value = JT400ExtBinaryConverter.asAS400Date(as400.getTimeZone(), field, arg.format(), tmp);
 			break;
 		case AS400DataType.TYPE_TIME:
-			value = JT400ExtBinaryConverter.asAS400Time(as400, field, arg.format(), tmp);
+			value = JT400ExtBinaryConverter.asAS400Time(as400.getTimeZone(), field, arg.format(), tmp);
 			break;
 		case AS400DataType.TYPE_TIMESTAMP:
-			value = JT400ExtBinaryConverter.asAS400Timestamp(as400, field, tmp);
+			value = JT400ExtBinaryConverter.asAS400Timestamp(as400.getTimeZone(), field, tmp);
 			break;
 
 		case AS400DataType.TYPE_BYTE_ARRAY:

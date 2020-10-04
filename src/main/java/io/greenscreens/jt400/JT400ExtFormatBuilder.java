@@ -46,7 +46,7 @@ enum JT400ExtFormatBuilder {
 	 * @return
 	 * @throws Exception
 	 */
-	static public <T extends IJT400Format> T build(final AS400 as400, final Class<T> format, final ByteBuffer data) throws Exception {
+	public static <T extends IJT400Format> T build(final AS400 as400, final Class<T> format, final ByteBuffer data) throws Exception {
 		final T obj = format.getDeclaredConstructor().newInstance();
 		return build(as400, obj, data);
 	}
@@ -61,7 +61,7 @@ enum JT400ExtFormatBuilder {
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	static public <T extends IJT400Format> T build(final AS400 as400, final T obj, final ByteBuffer data) throws Exception {
+	public static <T extends IJT400Format> T build(final AS400 as400, final T obj, final ByteBuffer data) {
 
 		final Class<T> format = (Class<T>) obj.getClass();
 
@@ -98,24 +98,18 @@ enum JT400ExtFormatBuilder {
 	 * @param type
 	 * @throws Exception
 	 */
-	static private <T extends IJT400Format> void build(final AS400 as400, final T obj, final ByteBuffer buffer, final Stream<Class<T>> stream, final TYPE type) throws Exception {
+	private static <T extends IJT400Format> void build(final AS400 as400, final T obj, final ByteBuffer buffer, final Stream<Class<T>> stream, final TYPE type) {
 		
 		stream.forEach(clazz -> {
-		    try {
+	    	final Map<Integer, Field> fields = toFieldMap(clazz, type);
 
-		    	final Map<Integer, Field> fields = toFieldMap(clazz, type);
-
-		    	ByteBuffer data = buffer;
-				if (clazz.isAnnotationPresent(JT400Ref.class)) {
-					data = getSlice(as400, obj, fields, buffer);
-					if (data == null) return;
-				}
-				
-				build(as400, obj, clazz, fields, data);
-
-		    } catch (Exception ex) {
-		        throw new RuntimeException(ex);
-		    }		
+	    	ByteBuffer data = buffer;
+			if (clazz.isAnnotationPresent(JT400Ref.class)) {
+				data = getSlice(obj, fields, buffer);
+				if (data == null) return;
+			}
+			
+			build(as400, obj, clazz, fields, data);
 		});
 
 	}
@@ -131,7 +125,7 @@ enum JT400ExtFormatBuilder {
 	 * @return
 	 * @throws Exception
 	 */
-	static private <T extends IJT400Format> T build(final AS400 as400, final T obj, final Class<T> clazz, final Map<Integer, Field> fields, final ByteBuffer buffer) throws Exception {
+	private static <T extends IJT400Format> T build(final AS400 as400, final T obj, final Class<T> clazz, final Map<Integer, Field> fields, final ByteBuffer buffer) {
 
 		// process each annotated field
 		fields.forEach((k, field) -> {
@@ -139,7 +133,7 @@ enum JT400ExtFormatBuilder {
 				if (field.getType().isArray()) {
 					setArray(as400, obj, clazz, fields, field, buffer);
 				} else {
-					set(as400, obj, clazz, fields, field, buffer);
+					set(as400, obj, fields, field, buffer);
 				}
 			} catch (Exception e) {
 				throw new RuntimeException(e);
@@ -161,20 +155,15 @@ enum JT400ExtFormatBuilder {
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	static private <T extends IJT400Format> void setArray(final AS400 as400, final T obj, final Class<T> clazz, final Map<Integer, Field> fields, final Field field, final ByteBuffer buffer)  throws Exception {
+	private static <T extends IJT400Format> void setArray(final AS400 as400, final T obj, final Class<T> clazz, final Map<Integer, Field> fields, final Field field, final ByteBuffer buffer)  throws Exception {
 
-		JT400Format classFormat = null;
 		JT400Format fieldFormat = field.getAnnotation(JT400Format.class);
 		
 		final boolean isSubFormat = fieldFormat.type() == AS400DataType.TYPE_STRUCTURE;
 
-		if (isSubFormat) {
-			classFormat = field.getType().getComponentType().getAnnotation(JT400Format.class);
-		}
-
-		final int dataLen = getArrayDataLength(fields, field);
-		final int arraylen = getArrayLength(as400, clazz, fields, field, buffer);
-		final int offset = getArrayOffset(as400, clazz, fields, field, buffer);
+		final int dataLen = getArrayDataLength(field);
+		final int arraylen = getArrayLength(as400, fields, field, buffer);
+		final int offset = getArrayOffset(as400, fields, field, buffer);
 
 		final Object list = Array.newInstance(field.getType().getComponentType(), arraylen);
 
@@ -187,7 +176,7 @@ enum JT400ExtFormatBuilder {
 			if (isSubFormat) {
 				value = JT400ExtFormatBuilder.build(as400, (Class<T>) field.getType().getComponentType(), ByteBuffer.wrap(tmp));
 			} else {
-				value = getValue(as400, fields, field, classFormat, tmp);
+				value = getValue(as400, field, fieldFormat, tmp);
 			}
 
 			Array.set(list, i, value);
@@ -208,7 +197,7 @@ enum JT400ExtFormatBuilder {
 	 * @param buffer
 	 * @throws Exception
 	 */
-	static private <T extends IJT400Format> void set(final AS400 as400, final T obj, final Class<T> clazz, final Map<Integer, Field> fields, final Field field, final ByteBuffer buffer) throws Exception {
+	private static <T extends IJT400Format> void set(final AS400 as400, final T obj, final Map<Integer, Field> fields, final Field field, final ByteBuffer buffer) throws Exception {
 
 		final JT400Format fieldformat = field.getAnnotation(JT400Format.class);
 
@@ -228,7 +217,7 @@ enum JT400ExtFormatBuilder {
 		Object value = null;
 		final byte [] tmp = JT400ExtUtil.getBytesFrom(buffer, fieldformat.offset(), len);
 
-		value = getValue(as400, fields, field, fieldformat, tmp);
+		value = getValue(as400, field, fieldformat, tmp);
 
 		JT400ExtUtil.setField(field, obj, value);
 
@@ -244,7 +233,7 @@ enum JT400ExtFormatBuilder {
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	static private <T extends IJT400Format> void setStructure(final AS400 as400, final T obj, final Field field, final ByteBuffer buffer) throws Exception {
+	private static <T extends IJT400Format> void setStructure(final AS400 as400, final T obj, final Field field, final ByteBuffer buffer) throws Exception {
 
 		if (!IJT400Format.class.isAssignableFrom(field.getType())) {
 			return;
@@ -278,7 +267,7 @@ enum JT400ExtFormatBuilder {
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	static private <T extends IJT400Format> ByteBuffer getSlice(final AS400 as400, final T obj, final Map<Integer, Field> fields, final ByteBuffer buffer)  throws Exception {		
+	private static <T extends IJT400Format> ByteBuffer getSlice(final T obj, final Map<Integer, Field> fields, final ByteBuffer buffer) {		
 	
 		ByteBuffer data = null;
 
@@ -310,7 +299,7 @@ enum JT400ExtFormatBuilder {
 	 * @param length
 	 * @return
 	 */
-	static private ByteBuffer slice(final ByteBuffer buffer, final int offset, final int length) {
+	private static ByteBuffer slice(final ByteBuffer buffer, final int offset, final int length) {
 		if ( buffer.capacity() < offset + length ) {
 			throw new RuntimeException("ByteBuffer too small, check JT400Format definition.");
 		}
@@ -330,7 +319,7 @@ enum JT400ExtFormatBuilder {
 	 * @return
 	 * @throws Exception
 	 */
-	static private Object getValue(final AS400 as400, final Map<Integer, Field> fields, final Field field, final JT400Format format, final byte[] tmp)  throws Exception  {
+	private static  Object getValue(final AS400 as400, final Field field, final JT400Format format, final byte[] tmp)  throws Exception  {
 
 		Object value = null;
 
@@ -338,57 +327,57 @@ enum JT400ExtFormatBuilder {
 
 		switch (type) {
 		case AS400DataType.TYPE_BIN1:
-			value = JT400ExtBinaryConverter.asAS400Bin1(as400, field, tmp);
+			value = JT400ExtBinaryConverter.asAS400Bin1(field, tmp);
 			break;
 		case AS400DataType.TYPE_BIN2:
-			value = JT400ExtBinaryConverter.asAS400Bin2(as400, field, tmp);
+			value = JT400ExtBinaryConverter.asAS400Bin2(field, tmp);
 			break;
 		case AS400DataType.TYPE_BIN4:
-			value = JT400ExtBinaryConverter.asAS400Bin4(as400, field, tmp);
+			value = JT400ExtBinaryConverter.asAS400Bin4(field, tmp);
 			break;
 		case AS400DataType.TYPE_BIN8:
-			value = JT400ExtBinaryConverter.asAS400Bin8(as400, field, tmp);
+			value = JT400ExtBinaryConverter.asAS400Bin8(field, tmp);
 			break;
 
 		case AS400DataType.TYPE_UBIN1:
-			value = JT400ExtBinaryConverter.asAS400UBin1(as400, field, tmp);
+			value = JT400ExtBinaryConverter.asAS400UBin1(field, tmp);
 			break;
 		case AS400DataType.TYPE_UBIN2:
-			value = JT400ExtBinaryConverter.asAS400UBin2(as400, field, tmp);
+			value = JT400ExtBinaryConverter.asAS400UBin2(field, tmp);
 			break;
 		case AS400DataType.TYPE_UBIN4:
-			value = JT400ExtBinaryConverter.asAS400UBin4(as400, field, tmp);
+			value = JT400ExtBinaryConverter.asAS400UBin4(field, tmp);
 			break;
 		case AS400DataType.TYPE_UBIN8:
-			value = JT400ExtBinaryConverter.asAS400UBin8(as400, field, tmp);
+			value = JT400ExtBinaryConverter.asAS400UBin8(field, tmp);
 			break;
 
 		case AS400DataType.TYPE_FLOAT4:
-			value = JT400ExtBinaryConverter.asAS400Float4(as400, field, tmp);
+			value = JT400ExtBinaryConverter.asAS400Float4(field, tmp);
 			break;
 		case AS400DataType.TYPE_FLOAT8:
-			value = JT400ExtBinaryConverter.asAS400Float8(as400, field, tmp);
+			value = JT400ExtBinaryConverter.asAS400Float8(field, tmp);
 			break;
 
 		case AS400DataType.TYPE_DECFLOAT:
-			value = JT400ExtBinaryConverter.asAS400DecFloat(as400, field, format.decimals(), tmp);
+			value = JT400ExtBinaryConverter.asAS400DecFloat(field, format.decimals(), tmp);
 			break;
 
 		case AS400DataType.TYPE_ZONED:
-			value = JT400ExtBinaryConverter.asAS400ZonedDecimal(as400, field, format.length(), format.decimals(), tmp);
+			value = JT400ExtBinaryConverter.asAS400ZonedDecimal(field, format.length(), format.decimals(), tmp);
 			break;
 		case AS400DataType.TYPE_PACKED:
-			value = JT400ExtBinaryConverter.asAS400PackedDecimal(as400, field, format.length(), format.decimals(), tmp);
+			value = JT400ExtBinaryConverter.asAS400PackedDecimal(field, format.length(), format.decimals(), tmp);
 			break;
 
 		case AS400DataType.TYPE_DATE:
-			value = JT400ExtBinaryConverter.asAS400Date(as400, field, format.format(), tmp);
+			value = JT400ExtBinaryConverter.asAS400Date(as400.getTimeZone(), field, format.format(), tmp);
 			break;
 		case AS400DataType.TYPE_TIME:
-			value = JT400ExtBinaryConverter.asAS400Time(as400, field, format.format(), tmp);
+			value = JT400ExtBinaryConverter.asAS400Time(as400.getTimeZone(), field, format.format(), tmp);
 			break;
 		case AS400DataType.TYPE_TIMESTAMP:
-			value = JT400ExtBinaryConverter.asAS400Timestamp(as400, field, tmp);
+			value = JT400ExtBinaryConverter.asAS400Timestamp(as400.getTimeZone(), field, tmp);
 			break;
 
 		case AS400DataType.TYPE_BYTE_ARRAY:
@@ -420,7 +409,7 @@ enum JT400ExtFormatBuilder {
 	 * @param format
 	 * @return
 	 */
-	static private int getArrayDataLength(final Map<Integer, Field> fields, final Field field) {
+	private static int getArrayDataLength(final Field field) {
 
 		final JT400Format format = field.getAnnotation(JT400Format.class);
 
@@ -445,7 +434,7 @@ enum JT400ExtFormatBuilder {
 	 * @param field
 	 * @return
 	 */
-	static private int getStructureLength(final Field field) {
+	private static int getStructureLength(final Field field) {
 
 		JT400Format format = null;
 
@@ -472,7 +461,7 @@ enum JT400ExtFormatBuilder {
 	 * @param type
 	 * @return
 	 */
-	static private int getDataLength(final JT400Format format) {
+	private static int getDataLength(final JT400Format format) {
 
 		if (format.length() > 0) {
 			return format.length();
@@ -491,7 +480,7 @@ enum JT400ExtFormatBuilder {
 	 * @return
 	 * @throws Exception
 	 */
-	static private <T extends IJT400Format> int getArrayLength(final AS400 as400, final Class<T> format, final Map<Integer, Field> fields, final Field field, final ByteBuffer buffer) throws Exception {
+	private static  <T extends IJT400Format> int getArrayLength(final AS400 as400, final Map<Integer, Field> fields, final Field field, final ByteBuffer buffer) throws Exception {
 
 		final JT400Ref ref = field.getAnnotation(JT400Ref.class);
 		if (ref != null && ref.length() > -1) {
@@ -518,7 +507,7 @@ enum JT400ExtFormatBuilder {
 	 * @return
 	 * @throws Exception
 	 */
-	static private <T extends IJT400Format> int getArrayOffset(final AS400 as400, final Class<T> format, final Map<Integer, Field> fields, final Field field, final ByteBuffer buffer) throws Exception {
+	private static  <T extends IJT400Format> int getArrayOffset(final AS400 as400, final Map<Integer, Field> fields, final Field field, final ByteBuffer buffer) throws Exception {
 
 		final JT400Ref ref = field.getAnnotation(JT400Ref.class);
 		if (ref != null) {
@@ -539,13 +528,13 @@ enum JT400ExtFormatBuilder {
 	 * @return
 	 * @throws Exception
 	 */
-	static private int getFieldOrRefLength(final AS400 as400, final Map<Integer, Field> fields, final ByteBuffer buffer, final int offset) throws Exception {
+	private static  int getFieldOrRefLength(final AS400 as400, final Map<Integer, Field> fields, final ByteBuffer buffer, final int offset) throws Exception {
 
 		if (offset < 0) return 0;
 		
 		if (fields.containsKey(offset)) {
 			final Field refField = fields.get(offset);
-			return getFieldValue(as400, fields, refField, buffer);
+			return getFieldValue(as400, refField, buffer);
 		} else {
 			return JT400ExtBinaryConverter.getIntValue(buffer, offset);
 		}
@@ -562,11 +551,11 @@ enum JT400ExtFormatBuilder {
 	 * @return
 	 * @throws Exception
 	 */
-	static private <T extends IJT400Format> int getFieldValue(final AS400 as400, final Map<Integer, Field> fields, final Field field, final ByteBuffer buffer) throws Exception {
+	private static  int getFieldValue(final AS400 as400, final Field field, final ByteBuffer buffer) throws Exception {
 
 		final JT400Format fmt = field.getAnnotation(JT400Format.class);
 		final byte [] tmp = JT400ExtUtil.getBytesFrom(buffer, fmt.offset(), getDataLength(fmt));
-		final Object value = getValue(as400, fields, field, fmt, tmp);
+		final Object value = getValue(as400, field, fmt, tmp);
 
 		if (value != null) {
 			return (int) value;
@@ -582,7 +571,7 @@ enum JT400ExtFormatBuilder {
 	 * @return
 	 * @throws Exception
 	 */
-	static private <T extends IJT400Format> Map<Integer, Field> toFieldMap(final Class<T> format, final TYPE type) {
+	private static  <T extends IJT400Format> Map<Integer, Field> toFieldMap(final Class<T> format, final TYPE type) {
 
 		final List<Field> list = Arrays.asList(format.getDeclaredFields());
 		
@@ -599,7 +588,7 @@ enum JT400ExtFormatBuilder {
 	 * @param type
 	 * @return
 	 */
-	static private Stream<Field> filter(final Stream<Field> stream, final TYPE type) {
+	private static  Stream<Field> filter(final Stream<Field> stream, final TYPE type) {
 		
 		return stream.filter( f -> {
 			
@@ -609,12 +598,8 @@ enum JT400ExtFormatBuilder {
 
 			final boolean isRelative = f.isAnnotationPresent(JT400Ref.class);
 			
-			if (type == TYPE.NORMAL && isRelative ||
-				type == TYPE.RELATIVE && !isRelative) {
-				return false;
-			}
+			return type == TYPE.NORMAL && isRelative ||	type == TYPE.RELATIVE && !isRelative;
 			
-			return true;
 		});		
 	}
 
@@ -624,7 +609,7 @@ enum JT400ExtFormatBuilder {
 	 * @param type
 	 * @return
 	 */
-	static private Map<Integer, Field> collect(final Stream<Field> stream) {
+	private static  Map<Integer, Field> collect(final Stream<Field> stream) {
 		
 		final AtomicInteger cnt = new AtomicInteger(0);
 		
