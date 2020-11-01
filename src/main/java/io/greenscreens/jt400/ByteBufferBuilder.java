@@ -151,23 +151,23 @@ enum ByteBufferBuilder {
 		final boolean isSubFormat = fieldFormat.type() == AS400DataType.TYPE_STRUCTURE;
 
 		final int dataLen = JT400ExtFormatBuilder.getArrayDataLength(field);
-		final int arraylen = JT400ExtFormatBuilder.getArrayLength(as400, fields, field, buffer);
 		final int offset = JT400ExtFormatBuilder.getArrayOffset(as400, fields, field, buffer);
+		final int arraylen = JT400ExtFormatBuilder.getArrayLength(as400, fields, field, buffer);
 
-		final Object list = Array.newInstance(field.getType().getComponentType(), arraylen);
+		final Object []	list = (Object[]) Array.newInstance(field.getType().getComponentType(), arraylen);
 
+		ByteBuffer itemBuffer = null;
 		int i = 0;
 
 		while (i < arraylen) {
 
-			// TODO
-			
 			if (isSubFormat) {
-				
+				itemBuffer = ByteBufferBuilder.build(as400, (IJT400Format)list[i]);				
 			} else {
-				
+				itemBuffer = ByteBufferBuilder.build(as400, (IJT400Format) JT400ExtUtil.getField(field, obj));
 			}
 
+			buffer.put(itemBuffer.array(), offset + (i * dataLen), dataLen);
 			i++;
 		}
 		
@@ -197,10 +197,21 @@ enum ByteBufferBuilder {
 		if (len == 0) return;
 
 		if (buffer.limit() < fieldformat.offset() + len) {
+			// buffer too small 
 			return;
 		}
 		
-		// TODO 
+		final AS400DataType inst = JT400ExtBinaryConverter.getDataInstance(as400, fieldformat, field);
+		
+		if (inst == null) {
+			// format not supported
+			return;
+		}
+		
+		final Object javaValue = JT400ExtUtil.getField(field, obj);		
+		final byte [] raw = inst.toBytes(javaValue);
+		buffer.position(fieldformat.offset());
+		buffer.put(raw, 0, len);
 
 	}
 
@@ -222,10 +233,11 @@ enum ByteBufferBuilder {
 		final JT400Format format = field.getAnnotation(JT400Format.class);
 		final int len = JT400ExtFormatBuilder.getStructureLength(field);
 		if (buffer.limit() < format.offset() + len) {
+			// buffer too small 
 			return;
 		}
 		
-		final ByteBuffer fieldBuffer = ByteBufferBuilder.build(as400, JT400ExtUtil.getField(field, obj));
+		final ByteBuffer fieldBuffer = ByteBufferBuilder.build(as400, (IJT400Format) JT400ExtUtil.getField(field, obj));
 		buffer.put(fieldBuffer.array(), format.offset(), len);
 	}
 

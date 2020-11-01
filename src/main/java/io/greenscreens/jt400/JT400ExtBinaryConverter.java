@@ -35,6 +35,8 @@ import com.ibm.as400.access.AS400UnsignedBin4;
 import com.ibm.as400.access.AS400UnsignedBin8;
 import com.ibm.as400.access.AS400ZonedDecimal;
 
+import io.greenscreens.jt400.annotations.JT400Format;
+
 /**
  * Convert from byte array to specified field type / jt400 type
  */
@@ -500,7 +502,7 @@ enum JT400ExtBinaryConverter {
 	 * @param type
 	 * @return
 	 */
-	public static  int getDataLength(final int type) {
+	public static int getDataLength(final int type) {
 
 		switch (type) {
 		case AS400DataType.TYPE_BIN1:
@@ -529,6 +531,52 @@ enum JT400ExtBinaryConverter {
 
 		default:
 			return 0;
+		}
+
+	}
+
+	
+	public static AS400DataType getDataInstance(final AS400 as400, final JT400Format format, final Field field) {
+
+		switch (format.type()) {
+		case AS400DataType.TYPE_TEXT:
+			return new AS400Text(format.length(), as400);
+			
+		case AS400DataType.TYPE_BIN1:
+			return new AS400Bin1();
+		case AS400DataType.TYPE_BIN2:
+			return new AS400Bin2();
+		case AS400DataType.TYPE_BIN4:
+			return new AS400Bin4();
+		case AS400DataType.TYPE_BIN8:
+			return new AS400Bin8();
+			
+		case AS400DataType.TYPE_UBIN1:
+			return new AS400UnsignedBin1();
+		case AS400DataType.TYPE_UBIN2:
+			return new AS400UnsignedBin2();
+		case AS400DataType.TYPE_UBIN4:
+			return new AS400UnsignedBin4();
+		case AS400DataType.TYPE_UBIN8:
+			return new AS400UnsignedBin8();
+			
+		case AS400DataType.TYPE_FLOAT4:
+			return new AS400Float4();
+		case AS400DataType.TYPE_FLOAT8:
+			return new AS400Float8();
+
+		case AS400DataType.TYPE_DATE:
+			return new AS400Date();			
+		case AS400DataType.TYPE_TIME:
+			return new AS400Time();
+		case AS400DataType.TYPE_TIMESTAMP:
+			return new AS400Timestamp();
+
+		default:
+			if (String.class.isAssignableFrom(field.getType())) {
+				return new AS400Text(format.length(), as400);	
+			}
+			return null;
 		}
 
 	}

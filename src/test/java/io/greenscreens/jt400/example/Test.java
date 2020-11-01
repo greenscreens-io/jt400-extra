@@ -33,17 +33,34 @@ public class Test {
 	
 	static final AS400 as400 = new AS400("127.0.0.1", "QSECOFR", "QSECOFR");
 
-	public static void main(String[] args) throws Exception {
-		testFormat1();
-		// testFormat();
-		// testParams();
-		// main0();
-		// main1();
-		// main2();
-		// main3();
-		// main4();
+	public static void main(String[] args) {
+		try {
+			as400.setGuiAvailable(false);
+			testBinary();
+			//testFormat1();
+			//testFormat();
+			// testParams();
+			// main0();
+			// main1();
+			// main2();
+			// main3();
+			// main4();
+			
+			 // main5();
+			
+		} catch (Exception e) {
+			as400.disconnectAllServices();
+		}
+	}
+
+	public static void testBinary() throws Exception {
+		byte [] data = JT400ExtUtil.hexToBytes(DEVD1100Hex);
+		final DEVD1100 result1100 = JT400ExtFactory.build(as400, DEVD1100.class, ByteBuffer.wrap(data));
 		
-		 // main5();
+		final ByteBuffer buffer = JT400ExtFactory.build(as400, result1100);
+		final String hexData = JT400ExtUtil.bytesToHex(buffer.array());
+		System.out.println(hexData);
+		System.out.println(DEVD1100Hex.equalsIgnoreCase(hexData));
 	}
 
 	public static void testFormat1() throws Exception {

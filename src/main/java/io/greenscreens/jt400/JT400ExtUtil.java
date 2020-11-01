@@ -74,10 +74,9 @@ public enum JT400ExtUtil {
 	 * @return
 	 * @throws Exception
 	 */
-	@SuppressWarnings("unchecked")
-	static <T extends IJT400Format> T getField(final Field field, final T obj) throws Exception {
+	static <T extends IJT400Format> Object getField(final Field field, final T obj) throws Exception {
 		JT400ExtUtil.enableField(field);
-		return (T) field.get(obj);
+		return field.get(obj);
 	}
 
 	/**
