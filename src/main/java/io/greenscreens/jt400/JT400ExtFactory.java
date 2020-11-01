@@ -30,6 +30,18 @@ public enum JT400ExtFactory {
 ;
 
 	/**
+	 * Convert JT400ExtFormat to ByteBuffer byte array
+	 * @param <T>
+	 * @param as400
+	 * @param format
+	 * @return
+	 * @throws Exception
+	 */
+	public static <T extends IJT400Format> ByteBuffer build(final AS400 as400, final T format) throws Exception {
+		return ByteBufferBuilder.build(as400, format);
+	}
+	
+	/**
 	 * Build format from response bytes based on JT400Format structure
 	 *
 	 * @param as400

@@ -56,6 +56,31 @@ public enum JT400ExtUtil {
 	}
 
 	/**
+	 * Get class of type IJT400Format from field
+	 * @param <T>
+	 * @param obj
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	static <T extends IJT400Format> Class<T> toClass(final T obj) {
+		return (Class<T>) obj.getClass();
+	}
+
+	/**
+	 * Get value from field
+	 * @param <T>
+	 * @param field
+	 * @param obj
+	 * @return
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	static <T extends IJT400Format> T getField(final Field field, final T obj) throws Exception {
+		JT400ExtUtil.enableField(field);
+		return (T) field.get(obj);
+	}
+
+	/**
 	 * Use reflection to set value to object field
 	 * @param field
 	 * @param obj
@@ -272,7 +297,7 @@ public enum JT400ExtUtil {
 	 * @param messages
 	 */
 	public static void printErrors(final AS400Message [] messages) {
-		printErrors(messages, System.out);
+		printErrors(messages, System.err);
 	}
 
 	/**

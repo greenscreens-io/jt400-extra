@@ -71,7 +71,7 @@ enum JT400ExtBinaryConverter {
 		final Class<?> clazz = field.getType();
 		
 		if (clazz == boolean.class) {
-			value = (byte) bin1.toByte(tmp) == 1;
+			value = bin1.toByte(tmp) == 1;
 		} else if (clazz == Boolean.class) {
 			value = Boolean.valueOf(bin1.toByte(tmp) == 1);
 		} else if (clazz == byte.class) {
