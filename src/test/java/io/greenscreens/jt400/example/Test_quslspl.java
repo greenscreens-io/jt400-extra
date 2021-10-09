@@ -7,7 +7,7 @@ import io.greenscreens.jt400.JT400ExtFactory;
 import io.greenscreens.jt400.JT400ExtUtil;
 import io.greenscreens.jt400.programs.qsys.quslspl.*;
 
-public class Test {
+public class Test_quslspl {
 
 	public static void main(String[] args) throws Exception {
 
@@ -19,10 +19,10 @@ public class Test {
 		
 		builder.withUserName("*ALL");
 		
-		final QUSLSPL qgyrprtl = builder.build();		
-		IQUSLSPL.create(as400).call(qgyrprtl);
+		final QUSLSPL quslspl = builder.build();		
+		IQUSLSPL.create(as400).call(quslspl);
 		
-		final ERRC0100 err = JT400ExtFactory.build(as400, ERRC0100.class, qgyrprtl.errorCode);
+		final ERRC0100 err = JT400ExtFactory.build(as400, ERRC0100.class, quslspl.getErrorCode());
 		System.out.println(err);
 
 		/*

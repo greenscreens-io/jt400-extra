@@ -234,6 +234,142 @@ public class QUSLSPL implements IJT400Params {
 	@Id(16) @Input 
 	@JT400Argument(type = AS400DataType.TYPE_TEXT, pass = ProgramParameter.PASS_BY_VALUE, length = 10)
 	String auxiliaryStoragePoolDeviceName;
+	
+	public String getUserSpaceName() {
+		return userSpaceName;
+	}
+
+	public void setUserSpaceName(String userSpaceName) {
+		this.userSpaceName = userSpaceName;
+	}
+
+	public String getFormatName() {
+		return formatName;
+	}
+
+	public void setFormatName(String formatName) {
+		this.formatName = formatName;
+	}
+
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+
+	public String getOutputQueueName() {
+		return outputQueueName;
+	}
+
+	public void setOutputQueueName(String outputQueueName) {
+		this.outputQueueName = outputQueueName;
+	}
+
+	public String getFormType() {
+		return formType;
+	}
+
+	public void setFormType(String formType) {
+		this.formType = formType;
+	}
+
+	public String getUserSpecifiedData() {
+		return userSpecifiedData;
+	}
+
+	public void setUserSpecifiedData(String userSpecifiedData) {
+		this.userSpecifiedData = userSpecifiedData;
+	}
+
+	public ByteBuffer getErrorCode() {
+		return errorCode;
+	}
+
+	public void setErrorCode(ByteBuffer errorCode) {
+		this.errorCode = errorCode;
+	}
+
+	public String getJobName() {
+		return jobName;
+	}
+
+	public void setJobName(String jobName) {
+		this.jobName = jobName;
+	}
+
+	public List<Integer> getFields() {
+		return fields;
+	}
+
+	public void setFields(List<Integer> fields) {
+		this.fields = fields;
+	}
+
+	public int getFieldSize() {
+		return fieldSize;
+	}
+
+	public void setFieldSize(int fieldSize) {
+		this.fieldSize = fieldSize;
+	}
+
+	public int getAuxiliaryStoragePool() {
+		return auxiliaryStoragePool;
+	}
+
+	public void setAuxiliaryStoragePool(int auxiliaryStoragePool) {
+		this.auxiliaryStoragePool = auxiliaryStoragePool;
+	}
+
+	public String getJobSystenName() {
+		return jobSystenName;
+	}
+
+	public void setJobSystenName(String jobSystenName) {
+		this.jobSystenName = jobSystenName;
+	}
+
+	public String getStartingSpooledFileCreateDate() {
+		return startingSpooledFileCreateDate;
+	}
+
+	public void setStartingSpooledFileCreateDate(String startingSpooledFileCreateDate) {
+		this.startingSpooledFileCreateDate = startingSpooledFileCreateDate;
+	}
+
+	public String getStartingSpooledFileCreateTime() {
+		return startingSpooledFileCreateTime;
+	}
+
+	public void setStartingSpooledFileCreateTime(String startingSpooledFileCreateTime) {
+		this.startingSpooledFileCreateTime = startingSpooledFileCreateTime;
+	}
+
+	public String getEndingSpooledFileCreateDate() {
+		return endingSpooledFileCreateDate;
+	}
+
+	public void setEndingSpooledFileCreateDate(String endingSpooledFileCreateDate) {
+		this.endingSpooledFileCreateDate = endingSpooledFileCreateDate;
+	}
+
+	public String getEndingSpooledFileCreateTime() {
+		return endingSpooledFileCreateTime;
+	}
+
+	public void setEndingSpooledFileCreateTime(String endingSpooledFileCreateTime) {
+		this.endingSpooledFileCreateTime = endingSpooledFileCreateTime;
+	}
+
+	public String getAuxiliaryStoragePoolDeviceName() {
+		return auxiliaryStoragePoolDeviceName;
+	}
+
+	public void setAuxiliaryStoragePoolDeviceName(String auxiliaryStoragePoolDeviceName) {
+		this.auxiliaryStoragePoolDeviceName = auxiliaryStoragePoolDeviceName;
+	}
 
 	QUSLSPL(final Builder builder) {
 		this.userSpaceName = builder.userSpaceName;

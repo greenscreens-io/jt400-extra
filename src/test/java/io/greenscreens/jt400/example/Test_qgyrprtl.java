@@ -5,7 +5,7 @@ import io.greenscreens.jt400.ERRC0100;
 import io.greenscreens.jt400.JT400ExtFactory;
 import io.greenscreens.jt400.programs.qsys.qgyrprtl.*;
 
-public class Test {
+public class Test_qgyrprtl {
 
 	public static void main(String[] args) throws Exception {
 
@@ -27,13 +27,13 @@ public class Test {
 		final QGYRPRTL qgyrprtl = builder.build();		
 		IQGYRPRTL.create(as400).call(qgyrprtl);
 		
-		final OPENLIST openlist = JT400ExtFactory.build(as400, OPENLIST.class, qgyrprtl.listInformation);
+		final OPENLIST openlist = JT400ExtFactory.build(as400, OPENLIST.class, qgyrprtl.getListInformation());
 		System.out.println(openlist);
 		
-		final PRTL0200 result = JT400ExtFactory.build(as400, PRTL0200.class, qgyrprtl.receiver);
+		final PRTL0200 result = JT400ExtFactory.build(as400, PRTL0200.class, qgyrprtl.getReceiver());
 		System.out.println(result);
 		
-		final ERRC0100 err = JT400ExtFactory.build(as400, ERRC0100.class, qgyrprtl.errorCode);
+		final ERRC0100 err = JT400ExtFactory.build(as400, ERRC0100.class, qgyrprtl.getErrorCode());
 		System.out.println(err);
 	}
 
