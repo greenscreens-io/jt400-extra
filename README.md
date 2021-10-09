@@ -26,4 +26,4 @@ System.out.println(res.getDeviceName());
 
 For more info about library, check out our blog [here](https://blog.greenscreens.io/green-screens-jt400-extension-pack).
 
-&copy; Green Screens Ltd. 2016 - 2020
+&copy; Green Screens Ltd. 2016 - 2021
