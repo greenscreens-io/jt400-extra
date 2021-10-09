@@ -9,13 +9,17 @@ package io.greenscreens.jt400;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Logger;
 
@@ -28,8 +32,10 @@ import com.ibm.as400.access.ProgramParameter;
 import com.ibm.as400.access.QSYSObjectPathName;
 import com.ibm.as400.access.ServiceProgramCall;
 
+import io.greenscreens.jt400.annotations.Id;
 import io.greenscreens.jt400.annotations.JT400Format;
 import io.greenscreens.jt400.annotations.JT400Program;
+import io.greenscreens.jt400.annotations.JT400Ref;
 import io.greenscreens.jt400.interfaces.IJT400Format;
 import io.greenscreens.jt400.interfaces.IJT400Params;
 
@@ -40,7 +46,6 @@ public enum JT400ExtUtil {
 ;
 
 	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(JT400ExtUtil.class);
-
 
 	/**
 	 * Create JT400 program call path
@@ -75,8 +80,60 @@ public enum JT400ExtUtil {
 	 * @throws Exception
 	 */
 	static <T extends IJT400Format> Object getField(final Field field, final T obj) throws Exception {
+
+		final JT400Ref fieldRef = field.getAnnotation(JT400Ref.class);
+		final boolean isArray = field.getType().isArray();
+				
+		if (!isArray && Objects.nonNull(fieldRef)) {
+			final Field arrField = getRefField(field, obj); 
+			if (Objects.nonNull(arrField)) {
+				JT400ExtUtil.enableField(arrField);
+				final Object o = arrField.get(obj);
+				if (Objects.nonNull(o)) {
+					final int size = getArrayFieldLength(arrField, obj);
+					JT400ExtUtil.setField(field, obj, size);
+					return size;
+				}
+			}
+		}
+		
 		JT400ExtUtil.enableField(field);
-		return field.get(obj);
+		Object val = field.get(obj);
+		if (Objects.isNull(val)) val = field.getType().newInstance();
+		return val;
+	}
+	
+	static <T extends IJT400Format> int getArrayFieldLength(final Field field, final T obj) throws Exception {
+		int size = 0;
+		if (Objects.nonNull(field)) {
+			final Object o = field.get(obj);
+			if (Objects.nonNull(o)) {
+				if (field.getType().isArray()) {						
+					size = Array.getLength(o);
+				} else if (o instanceof Collection<?>) {
+					size = ((Collection<?>) o).size();
+				}
+			}
+		}
+		return size;
+	}
+	
+	/**
+	 * Return referenced array field 
+	 * @param <T>
+	 * @param field
+	 * @param obj
+	 * @return
+	 * @throws Exception
+	 */
+	static <T extends IJT400Format> Field getRefField(final Field field, final T obj) throws Exception {
+		
+		final JT400Ref fieldRef = field.getAnnotation(JT400Ref.class);
+
+		return Arrays.asList(obj.getClass().getDeclaredFields())
+		.stream().filter(f -> f.isAnnotationPresent(Id.class))
+		.filter(f -> f.getAnnotation(Id.class).value() == fieldRef.length())
+		.findFirst().orElse(null);
 	}
 
 	/**
@@ -368,4 +425,19 @@ public enum JT400ExtUtil {
 		return data;
 	}
 	
+	public static String pad(final String object, final String lib) {
+		return pad(object) + pad(lib);
+	}
+
+	public static String pad(final String val) {
+		return padRight(val, 10);
+	}
+	
+	public static String padRight(String s, int n) {
+	     return String.format("%-" + n + "s", s);  
+	}
+
+	public static String padLeft(String s, int n) {
+	    return String.format("%" + n + "s", s);  
+	}
 }

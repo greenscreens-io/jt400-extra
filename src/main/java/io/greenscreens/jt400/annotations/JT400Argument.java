@@ -30,6 +30,12 @@ public @interface JT400Argument {
 	int type() default -1;
 
 	/**
+	 * Data type of array
+	 * @return
+	 */
+	int of() default -1;
+	
+	/**
 	 * length for string, array, decimals
 	 * @return
 	 */

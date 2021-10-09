@@ -593,6 +593,8 @@ enum JT400ExtFormatBuilder {
 			if (!f.isAnnotationPresent(JT400Format.class)) {
 				return false;
 			}
+			
+			if (type == TYPE.ALL) return true;
 
 			final boolean isRelative = f.isAnnotationPresent(JT400Ref.class);
 			

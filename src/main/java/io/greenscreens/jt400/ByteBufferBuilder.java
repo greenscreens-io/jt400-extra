@@ -38,14 +38,17 @@ enum ByteBufferBuilder {
 	 * @return
 	 * @throws Exception
 	 */
-	public static  <T extends IJT400Format> ByteBuffer build(final AS400 as400, final T obj) throws Exception {
+	public static <T extends IJT400Format> ByteBuffer build(final AS400 as400, final T obj) throws Exception {
 		
 		final Class<T> format = JT400ExtUtil.toClass(obj);
 		if (!format.isAnnotationPresent(JT400Format.class)) {
 			throw new IOException("Format size not defined!");
 		}
 		
-		final JT400Format ann = format.getDeclaredAnnotation(JT400Format.class);	
+		final JT400Format ann = format.getDeclaredAnnotation(JT400Format.class);
+		if (ann.length() == -1) {
+			return ByteBufferBuilderDynamic.build(as400, obj);
+		}
 		return build(as400, obj, ByteBuffer.allocate(ann.length()));
 	}
 	
@@ -82,6 +85,7 @@ enum ByteBufferBuilder {
 		stream = classes.stream().filter(entry -> entry.isAnnotationPresent(JT400Ref.class));		
 		build(as400, obj, buffer, stream, TYPE.ALL);	
 		
+		buffer.rewind();
 		return buffer;
 	}
 
@@ -144,7 +148,7 @@ enum ByteBufferBuilder {
 	 * @param buffer
 	 * @throws Exception
 	 */
-	private static <T extends IJT400Format> void setArray(final AS400 as400, final T obj, final Class<T> clazz, final Map<Integer, Field> fields, final Field field, final ByteBuffer buffer)  throws Exception {
+	protected static <T extends IJT400Format> void setArray(final AS400 as400, final T obj, final Class<T> clazz, final Map<Integer, Field> fields, final Field field, final ByteBuffer buffer)  throws Exception {
 		
 		final JT400Format fieldFormat = field.getAnnotation(JT400Format.class);
 		
@@ -183,7 +187,7 @@ enum ByteBufferBuilder {
 	 * @param buffer
 	 * @throws Exception
 	 */
-	private static <T extends IJT400Format> void set(final AS400 as400, final T obj, final Map<Integer, Field> fields, final Field field, final ByteBuffer buffer) throws Exception {
+	protected static <T extends IJT400Format> void set(final AS400 as400, final T obj, final Map<Integer, Field> fields, final Field field, final ByteBuffer buffer) throws Exception {
 		
 		final JT400Format fieldformat = field.getAnnotation(JT400Format.class);
 
@@ -224,7 +228,7 @@ enum ByteBufferBuilder {
 	 * @param buffer
 	 * @throws Exception
 	 */
-	private static <T extends IJT400Format> void setStructure(final AS400 as400, final T obj, final Field field, final ByteBuffer buffer) throws Exception {
+	protected static <T extends IJT400Format> void setStructure(final AS400 as400, final T obj, final Field field, final ByteBuffer buffer) throws Exception {
 
 		if (!IJT400Format.class.isAssignableFrom(field.getType())) {
 			return;
