@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015, 2020  Green Screens Ltd.
+ * Copyright (C) 2015, 2025 Green Screens Ltd.
  *
  * https://www.greenscreens.io
  *
