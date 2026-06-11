@@ -594,7 +594,7 @@ public enum JT400ExtUtil {
 		return writer.toString();
 	}
 
-	private static  final byte[] HEX_ARRAY = "0123456789ABCDEF".getBytes();
+	private static final byte[] HEX_ARRAY = "0123456789ABCDEF".getBytes();
 
 	/**
 	 * Convert ByteBuffer to hex string
@@ -602,7 +602,18 @@ public enum JT400ExtUtil {
 	 * @return
 	 */
 	public static String bytesToHex(final ByteBuffer buffer) {
-		return buffer == null ? "" : bytesToHex(buffer.array());
+		if (Objects.nonNull(buffer)) {
+			if (buffer.isDirect()) {
+				final int pos = buffer.position();
+				final byte[] b = new byte[buffer.limit()];
+				buffer.rewind();
+				buffer.get(b);
+				buffer.position(pos);
+			}
+			return bytesToHex(buffer.array(), buffer.position(), buffer.limit() );
+		}
+
+		return "";
 	}
 
 	/**
@@ -611,17 +622,22 @@ public enum JT400ExtUtil {
 	 * @return
 	 */
 	public static String bytesToHex(final byte[] bytes) {
+		return bytesToHex(bytes, 0, bytes.length);
+	}
 
-		if (bytes == null) {
+	public static String bytesToHex(final byte[] bytes, final int start, final int stop) {
+
+		if (bytes == null || start < 0 || stop > bytes.length || start > stop) {
 			return "";
 		}
 
-		final byte[] hexChars = new byte[bytes.length * 2];
+		final byte[] hexChars = new byte[(stop - start) * 2];
 
-		for (int j = 0; j < bytes.length; j++) {
+		int destPos = 0;
+		for (int j = start; j < stop; j++) {
 			final int v = bytes[j] & 0xFF;
-			hexChars[j * 2] = HEX_ARRAY[v >>> 4];
-			hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
+			hexChars[destPos++] = HEX_ARRAY[v >>> 4];
+			hexChars[destPos++] = HEX_ARRAY[v & 0x0F];
 		}
 
 		return new String(hexChars, StandardCharsets.UTF_8);
