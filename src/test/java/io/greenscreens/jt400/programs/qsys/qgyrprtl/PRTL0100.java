@@ -7,15 +7,12 @@
  package io.greenscreens.jt400.programs.qsys.qgyrprtl;
 
  import com.ibm.as400.access.AS400DataType;
-
- import io.greenscreens.jt400.annotations.Id;
  import io.greenscreens.jt400.annotations.JT400Format;
  import io.greenscreens.jt400.interfaces.IJT400Format;
 
  /**
   * Writer information
   */
- @Id(value = 0)
  @JT400Format(length = 64)
  public class PRTL0100 implements IJT400Format {
 

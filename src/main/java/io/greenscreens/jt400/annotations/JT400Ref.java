@@ -1,15 +1,11 @@
 /*
- * Copyright (C) 2015, 2025 Green Screens Ltd.
- *
- * https://www.greenscreens.io
- *
+ * Copyright (C) 2015, 2026 Green Screens Ltd.
  */
 package io.greenscreens.jt400.annotations;
 
-import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.ElementType.FIELD;
-import static java.lang.annotation.ElementType.PARAMETER;
-import static java.lang.annotation.ElementType.TYPE_PARAMETER;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.ElementType.RECORD_COMPONENT;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.Retention;
@@ -22,7 +18,7 @@ import java.lang.annotation.Target;
  *
  */
 @Retention(RUNTIME)
-@Target({ FIELD, PARAMETER, TYPE_PARAMETER, TYPE })
+@Target({ FIELD, RECORD_COMPONENT, TYPE })
 public @interface JT400Ref {
 
 	/**
@@ -34,4 +30,9 @@ public @interface JT400Ref {
 	 * Reference to data offset field
 	 */
 	int offset() default -1;
+
+	/**
+	 * Reference to record size field
+	 */
+	int size() default -1;
 }

@@ -6,8 +6,6 @@ package io.greenscreens.jt400.programs.qsys.qsprwtri;
 import java.nio.ByteBuffer;
 
 import com.ibm.as400.access.AS400DataType;
-import com.ibm.as400.access.ProgramParameter;
-
 import io.greenscreens.jt400.annotations.Id;
 import io.greenscreens.jt400.annotations.Input;
 import io.greenscreens.jt400.annotations.JT400Argument;
@@ -36,14 +34,14 @@ public class QSPRWTRI implements IJT400Params {
 	//@JT400Argument(type = AS400DataType.TYPE_TEXT, length = 320, pass = ProgramParameter.PASS_BY_REFERENCE)
 	// String receiver;
 	
-	@JT400Argument(type = AS400DataType.TYPE_BYTE_ARRAY, length = 320, pass = ProgramParameter.PASS_BY_REFERENCE)
+	@JT400Argument(type = AS400DataType.TYPE_BYTE_ARRAY, length = 320)
 	ByteBuffer receiver;
 	
 	/**
 	 * The content and format of the writer information to be returned.
 	 */
 	@Id(1) @Input
-	@JT400Argument(type = AS400DataType.TYPE_TEXT, pass = ProgramParameter.PASS_BY_VALUE, length = 8)
+	@JT400Argument(type = AS400DataType.TYPE_TEXT, length = 8)
 	String formatName = "WTRI0100";
 
 	/**
@@ -51,11 +49,11 @@ public class QSPRWTRI implements IJT400Params {
 	 * The following special value is supported for this parameter:
 	 */
 	@Id(2) @Input
-	@JT400Argument(type = AS400DataType.TYPE_TEXT, pass = ProgramParameter.PASS_BY_VALUE, length = 10)
+	@JT400Argument(type = AS400DataType.TYPE_TEXT, length = 10)
 	String printerName;
 	
 	@Id(3) @Input @Output
-	@JT400Argument(type = AS400DataType.TYPE_BYTE_ARRAY, pass = ProgramParameter.PASS_BY_REFERENCE)
+	@JT400Argument(type = AS400DataType.TYPE_BYTE_ARRAY)
 	ByteBuffer errorCode;
 
 	/**
@@ -63,7 +61,7 @@ public class QSPRWTRI implements IJT400Params {
 	 * The value of this parameter must be set to blanks if the printer name parameter is not set to *WRITER.
 	 */
 	@Id(4) @Input
-	@JT400Argument(type = AS400DataType.TYPE_TEXT, pass = ProgramParameter.PASS_BY_VALUE, length = 10)
+	@JT400Argument(type = AS400DataType.TYPE_TEXT, length = 10)
 	String writerName;
 
 	public ByteBuffer getReceiver() {

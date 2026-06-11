@@ -9,8 +9,6 @@ package io.greenscreens.jt400.programs.qsys.qtocnetsts;
 import java.nio.ByteBuffer;
 
 import com.ibm.as400.access.AS400DataType;
-
-import io.greenscreens.jt400.annotations.Id;
 import io.greenscreens.jt400.annotations.JT400Format;
 import io.greenscreens.jt400.annotations.JT400Ref;
 
@@ -22,7 +20,6 @@ import io.greenscreens.jt400.annotations.JT400Ref;
  * Dynamic Proxy will take data slice from received program output bytes.
  * https://www.ibm.com/support/knowledgecenter/ssw_ibm_i_73/apis/qtocrtvtcpa.htm#TCPA0200
  */
-@Id(value = 0)
 @JT400Ref(offset = 128, length = 132) // this format is dynamic, starts from offset defined at 128
 @JT400Format(length = 140 + 160) // TCPA0100 + 120 + dynamic param (last) 
 public class TCPA0200 extends TCPA0100 {

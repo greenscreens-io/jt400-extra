@@ -6,7 +6,6 @@ package io.greenscreens.jt400.programs.qsys.qgyrprtl;
 import java.nio.ByteBuffer;
 
 import com.ibm.as400.access.AS400DataType;
-import com.ibm.as400.access.ProgramParameter;
 
 import io.greenscreens.jt400.annotations.Id;
 import io.greenscreens.jt400.annotations.Input;
@@ -32,14 +31,14 @@ public class QGYRPRTL implements IJT400Params {
 	 * 
 	 */
 	@Id(0) @Output
-	@JT400Argument(type = AS400DataType.TYPE_BYTE_ARRAY, length = 142, pass = ProgramParameter.PASS_BY_REFERENCE)
+	@JT400Argument(type = AS400DataType.TYPE_BYTE_ARRAY, length = 142)
 	ByteBuffer receiver;
 	
 	/**
 	 * 
 	 */
 	@Id(1) @Input
-	@JT400Argument(type = AS400DataType.TYPE_BIN4, pass = ProgramParameter.PASS_BY_VALUE)
+	@JT400Argument(type = AS400DataType.TYPE_BIN4)
 	int receiverLength;
 
 	/**
@@ -47,35 +46,35 @@ public class QGYRPRTL implements IJT400Params {
 	 * https://www.ibm.com/docs/en/i/7.4?topic=concepts-open-list-information-format
 	 */
 	@Id(2) @Output
-	@JT400Argument(type = AS400DataType.TYPE_BYTE_ARRAY, pass = ProgramParameter.PASS_BY_REFERENCE, length = 80)
+	@JT400Argument(type = AS400DataType.TYPE_BYTE_ARRAY, length = 80)
 	ByteBuffer listInformation;
 
 	/**
 	 * 
 	 */
 	@Id(3) @Input
-	@JT400Argument(type = AS400DataType.TYPE_BIN4, pass = ProgramParameter.PASS_BY_VALUE)
+	@JT400Argument(type = AS400DataType.TYPE_BIN4)
 	int receiveRecords;
 
 	/**
 	 * 
 	 */	
 	@Id(4) @Input
-	@JT400Argument(type = AS400DataType.TYPE_BYTE_ARRAY, pass = ProgramParameter.PASS_BY_VALUE)
+	@JT400Argument(type = AS400DataType.TYPE_BYTE_ARRAY)
 	ByteBuffer filterInfo;
 	
 	/**
 	 * 
 	 */
 	@Id(5) @Input
-	@JT400Argument(type = AS400DataType.TYPE_TEXT, pass = ProgramParameter.PASS_BY_VALUE, length = 8)
+	@JT400Argument(type = AS400DataType.TYPE_TEXT, length = 8)
 	String formatName = "PRTL0100";
 
 	/**
 	 * 
 	 */	
 	@Id(6) @Input @Output
-	@JT400Argument(type = AS400DataType.TYPE_BYTE_ARRAY, pass = ProgramParameter.PASS_BY_REFERENCE)
+	@JT400Argument(type = AS400DataType.TYPE_BYTE_ARRAY)
 	ByteBuffer errorCode;
 	
 	public ByteBuffer getReceiver() {

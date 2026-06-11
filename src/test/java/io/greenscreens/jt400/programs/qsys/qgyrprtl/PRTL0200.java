@@ -8,14 +8,12 @@
 
  import com.ibm.as400.access.AS400DataType;
 
- import io.greenscreens.jt400.annotations.Id;
  import io.greenscreens.jt400.annotations.JT400Format;
  import io.greenscreens.jt400.interfaces.IJT400Format;
 
  /**
   * Writer inform<tion
   */
- @Id(value = 0)
  @JT400Format(length = 142)
  public class PRTL0200 implements IJT400Format {
 

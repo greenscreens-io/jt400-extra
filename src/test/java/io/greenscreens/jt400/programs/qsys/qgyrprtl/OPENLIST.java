@@ -7,15 +7,12 @@
 package io.greenscreens.jt400.programs.qsys.qgyrprtl;
 
 import com.ibm.as400.access.AS400DataType;
-
-import io.greenscreens.jt400.annotations.Id;
 import io.greenscreens.jt400.annotations.JT400Format;
 import io.greenscreens.jt400.interfaces.IJT400Format;
 
  /**
   * Filter information
   */
- @Id(value = 0)
  @JT400Format(length = 80)
  public class OPENLIST implements IJT400Format {
 

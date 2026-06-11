@@ -17,7 +17,6 @@ import io.greenscreens.jt400.interfaces.IJT400Format;
  /**
   * Filter information
   */
- @Id(value = 0)
  @JT400Format(length = -1)
  public class FILTERINFO implements IJT400Format {
 

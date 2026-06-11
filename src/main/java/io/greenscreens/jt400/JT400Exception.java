@@ -1,8 +1,5 @@
 /*
- * Copyright (C) 2015, 2025 Green Screens Ltd.
- *
- * https://www.greenscreens.io
- *
+ * Copyright (C) 2015, 2026 Green Screens Ltd.
  */
 package io.greenscreens.jt400;
 
@@ -24,7 +21,7 @@ public class JT400Exception extends Exception {
 
 	JT400Exception(final AS400Message[] errors) {
 		super(JT400ExtUtil.getErrors(errors));
-		this.errors = errors;
+		this.errors = errors == null ? new AS400Message[]{} : errors;
 	}
 
 	public List<AS400Message> getErrors() {

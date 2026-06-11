@@ -1,8 +1,5 @@
 /*
- * Copyright (C) 2015, 2025 Green Screens Ltd.
- *
- * https://www.greenscreens.io
- *
+ * Copyright (C) 2015, 2026 Green Screens Ltd.
  */
 package io.greenscreens.jt400;
 
@@ -198,7 +195,9 @@ enum ByteBufferBuilder {
 
 		int len = JT400ExtFormatBuilder.getDataLength(fieldformat);
 
-		if (len == 0) return;
+		if (len == 0) {
+			return;
+		}
 
 		if (buffer.limit() < fieldformat.offset() + len) {
 			// buffer too small 

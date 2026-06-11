@@ -1,3 +1,8 @@
+## *Version 1.4.0* (11.06.2026)
+ - Updated to Java 17 
+ - Added Records support
+ - Code optimizations and re-factoring
+
 ## *Version 1.2.0* (17.08.2020)
 
 ### Error Formats
@@ -31,7 +36,7 @@
 ### Examples
  - Added ServiceProgramCall examples (QTOCNETSTS, QZCACLT)
  - Added Format with relative offsets (TCPA0200) 
- - Improved toString to print subformats
+ - Improved toString to print sub-formats
  
 ## *Version 1.1.0*  (14.08.2020)
 

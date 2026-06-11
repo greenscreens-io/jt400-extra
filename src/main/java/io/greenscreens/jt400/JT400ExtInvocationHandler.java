@@ -1,8 +1,5 @@
 /*
- * Copyright (C) 2015, 2025 Green Screens Ltd.
- *
- * https://www.greenscreens.io
- *
+ * Copyright (C) 2015, 2026 Green Screens Ltd.
  */
 package io.greenscreens.jt400;
 
@@ -10,6 +7,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.ibm.as400.access.AS400;
 import com.ibm.as400.access.ProgramCall;
@@ -18,18 +17,20 @@ import com.ibm.as400.access.QSYSObjectPathName;
 
 import io.greenscreens.jt400.annotations.Id;
 import io.greenscreens.jt400.annotations.JT400Program;
-import io.greenscreens.jt400.annotations.Output;
 import io.greenscreens.jt400.interfaces.IJT400Format;
 import io.greenscreens.jt400.interfaces.IJT400Params;
+import io.greenscreens.jt400.interfaces.IJT400Program;
 
 /**
  * Proxy class to generate JT400 call for given definitions
  */
 final class JT400ExtInvocationHandler<P extends IJT400Params> implements InvocationHandler {
 
+	private static final AtomicReference<Method> mref = new AtomicReference<>();
+
 	private final AS400 as400;
 	private final QSYSObjectPathName programName;
-	private Class<P> input;
+	private final Class<P> input;
 
 	/**
 	 * Constructor for proxy handler
@@ -42,15 +43,20 @@ final class JT400ExtInvocationHandler<P extends IJT400Params> implements Invocat
 	public JT400ExtInvocationHandler(final AS400 as400, final Class<P> input, final QSYSObjectPathName qsysPath) {
 		this.as400 = as400;
 		this.input = input;
-		this.programName = qsysPath;
+		programName = qsysPath;
 	}
 
 	/**
 	 * Invocation handler caller
 	 */
+	@Override
 	public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
 
+
 		if (!"call".equals(method.getName())) {
+			mref.compareAndSet(null, IJT400Program.class.getMethod("getSystem"));
+			if (mref.get().equals(method)) return as400;
+
 			throw new RuntimeException("Invalid method call");
 		}
 
@@ -61,7 +67,7 @@ final class JT400ExtInvocationHandler<P extends IJT400Params> implements Invocat
 		call(system, values, params);
 
 		final boolean useFormat = isMethodRetrunFormat(method);
-		
+
 		if (useFormat) {
 			final int index = getFormatID(method);
 			final ByteBuffer data = getOutput(values, params, index);
@@ -83,16 +89,17 @@ final class JT400ExtInvocationHandler<P extends IJT400Params> implements Invocat
 	}
 
 	/**
-	 * Return response format parameter data 
+	 * Return response format parameter data
 	 * @param method
 	 * @return
 	 */
 	private int getFormatID(final Method method) {
-		final Id id = method.getReturnType().getAnnotation(Id.class);
-		if (id != null) return id.value();
+		if (method.getReturnType().isAnnotationPresent(Id.class)) {
+			return method.getReturnType().getAnnotation(Id.class).value();
+		}
 		return -1;
 	}
-	
+
 	/**
 	 * Detect which system to use
 	 *
@@ -101,7 +108,9 @@ final class JT400ExtInvocationHandler<P extends IJT400Params> implements Invocat
 	 */
 	private AS400 getSystem(final Object[] args) {
 
-		if (args.length == 0) return as400;
+		if (args.length == 0) {
+			return as400;
+		}
 
 		if (isSystem(args[0])) {
 			return (AS400) args[0];
@@ -119,7 +128,9 @@ final class JT400ExtInvocationHandler<P extends IJT400Params> implements Invocat
 	@SuppressWarnings("unchecked")
 	private P getValues(final Object[] args) {
 
-		if (args.length == 0) return null;
+		if (args.length == 0) {
+			return null;
+		}
 
 		if (isSystem(args[0])) {
 			return (P) args[1];
@@ -158,12 +169,7 @@ final class JT400ExtInvocationHandler<P extends IJT400Params> implements Invocat
 	 */
 	@SuppressWarnings("unchecked")
 	private Class<P> getParams(final P values) {
-
-		if (values != null) {
-			return (Class<P>) values.getClass();
-		}
-
-		return input;
+		return values == null ? input : (Class<P>) values.getClass();
 	}
 
 	/**
@@ -177,32 +183,13 @@ final class JT400ExtInvocationHandler<P extends IJT400Params> implements Invocat
 	 */
 	private ByteBuffer getOutput(final P params, final Class<P> args, final int index) throws Exception {
 
-		// of not plain POJO, might require recursion for parent classes
-		final Field[] fields = args.getDeclaredFields();
+		final Optional<Field> field = JT400ExtUtil.getOutputFields(args).stream()
+				.filter(f -> f.getType() == ByteBuffer.class && (index < 0 || f.getAnnotation(Id.class).value() == index))
+				.findFirst();
 
-		for (Field field : fields) {
-			
-			if (!isOutputField(field)) continue; 
-			
-			final Id id = field.getAnnotation(Id.class);
-			JT400ExtUtil.enableField(field);
-			
-			if (index < 0 || index == id.value()) {
-				return (ByteBuffer) field.get(params);
-			}
-			
-		}
-
-		return null;
+		return field.isEmpty() ? null :(ByteBuffer) field.get().get(params);
 	}
 
-	private boolean isOutputField(final Field field) {
-		if (!field.isAnnotationPresent(Output.class)) return false; 
-		if (!field.isAnnotationPresent(Id.class)) return false;
-		if (field.getType() != ByteBuffer.class) return false;
-		return true;
-	}
-	
 	/**
 	 * Make a call to remote program by converting Java class definition into JT400 call and
 	 * converting byte response into Java class based on JT400 definition format
@@ -224,7 +211,7 @@ final class JT400ExtInvocationHandler<P extends IJT400Params> implements Invocat
 		final ProgramParameter[] parameters = JT400ExtParameterBuilder.build(as400, params, args);
 		final ProgramCall programCall = JT400ExtUtil.call(as400, programName.getPath(), parameters, jt400PGM);
 
-		JT400ExtResponseBuilder.build(programCall, params, args);			
+		JT400ExtResponseBuilder.build(programCall, params, args);
 
 	}
 

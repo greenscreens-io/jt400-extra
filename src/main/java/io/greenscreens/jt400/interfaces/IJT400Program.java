@@ -1,8 +1,5 @@
 /*
- * Copyright (C) 2015, 2025 Green Screens Ltd.
- *
- * https://www.greenscreens.io
- *
+ * Copyright (C) 2015, 2026 Green Screens Ltd.
  */
 package io.greenscreens.jt400.interfaces;
 
@@ -18,10 +15,20 @@ import io.greenscreens.jt400.JT400Exception;
  */
 public interface IJT400Program<T extends IJT400Params> {
 
+	public AS400 getSystem();
+
 	public boolean isError();
 
 	public AS400Message[] getErrors();
 
+	/**
+	 * Call IBM API
+	 *
+	 * @TODO Return Optional<ERRC0100>
+	 *
+	 * @param args
+	 * @throws JT400Exception
+	 */
 	public void call(final T args) throws JT400Exception;
 
 	public void call(final AS400 as400, final T args) throws JT400Exception;

@@ -1,13 +1,11 @@
 /*
- * Copyright (C) 2015, 2025 Green Screens Ltd.
- *
- * https://www.greenscreens.io
- *
+ * Copyright (C) 2015, 2026 Green Screens Ltd.
  */
 package io.greenscreens.jt400;
 
 import java.nio.ByteBuffer;
 
+import com.ibm.as400.access.AS400;
 import com.ibm.as400.access.AS400Bin4;
 import com.ibm.as400.access.AS400DataType;
 
@@ -43,12 +41,27 @@ public final class ERRC0100 implements IJT400Format {
 
 	@Id(4) @Output
 	@JT400Format(type = AS400DataType.TYPE_TEXT, offset = 16)
-	ByteBuffer data;
+	String data;
+
+	public boolean isError() {
+		return exceptionID != null && exceptionID.trim().length() > 0;
+	}
 
 	@Override
 	public String toString() {
 		return "ERRC0100 [bytesProvided=" + bytesProvided + ", bytesAvailable=" + bytesAvailable + ", exceptionID="
 				+ exceptionID + ", reserved=" + reserved + ", data=" + data + "]";
+	}
+
+	private static final ERRC0100 DEFAULT = new ERRC0100();
+
+	public static ERRC0100 parse(final AS400 as400, final ByteBuffer buffer) throws Exception {
+		if (buffer == null) {
+			return DEFAULT;
+		}
+		final ERRC0100 result = JT400ExtFactory.build(as400, ERRC0100.class, buffer);
+		buffer.position(0);
+		return result;
 	}
 
 	/**
@@ -58,13 +71,10 @@ public final class ERRC0100 implements IJT400Format {
 	 */
 	public static ByteBuffer toBuffer(final int size) {
 
-		final AS400Bin4 bin4 = new AS400Bin4();
-		final ByteBuffer buffer = ByteBuffer.allocate(size + 16);
-
-		buffer.put(bin4.toBytes(size));
-		buffer.rewind();
-
-		return buffer;
+		final AS400Bin4 bin4 = JT400ExtBinaryConverter.BIN4_CONVERTER;
+		return ByteBuffer.allocate(size + 16)
+				.put(bin4.toBytes(size))
+				.rewind();
 	}
 
 }

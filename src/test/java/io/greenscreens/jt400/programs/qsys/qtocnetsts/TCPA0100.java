@@ -7,15 +7,12 @@
 package io.greenscreens.jt400.programs.qsys.qtocnetsts;
 
 import com.ibm.as400.access.AS400DataType;
-
-import io.greenscreens.jt400.annotations.Id;
 import io.greenscreens.jt400.annotations.JT400Format;
 import io.greenscreens.jt400.interfaces.IJT400Format;
 
 /**
  * https://www.ibm.com/support/knowledgecenter/ssw_ibm_i_73/apis/qtocrtvtcpa.htm#TCPA0100
  */
-@Id(value = 0)
 @JT400Format(length = 140)
 public class TCPA0100 implements IJT400Format {
 

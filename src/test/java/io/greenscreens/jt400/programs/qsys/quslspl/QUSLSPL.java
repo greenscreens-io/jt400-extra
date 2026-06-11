@@ -7,8 +7,6 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 import com.ibm.as400.access.AS400DataType;
-import com.ibm.as400.access.ProgramParameter;
-
 import io.greenscreens.jt400.annotations.Id;
 import io.greenscreens.jt400.annotations.Input;
 import io.greenscreens.jt400.annotations.JT400Argument;
@@ -38,14 +36,14 @@ public class QUSLSPL implements IJT400Params {
 	 * 		*LIBL	The library list
 	 */
 	@Id(0) @Input
-	@JT400Argument(type = AS400DataType.TYPE_TEXT, length = 20, pass = ProgramParameter.PASS_BY_VALUE)
+	@JT400Argument(type = AS400DataType.TYPE_TEXT, length = 20)
 	String userSpaceName;
 	
 	/**
 	 * 
 	 */
 	@Id(1) @Input
-	@JT400Argument(type = AS400DataType.TYPE_TEXT, pass = ProgramParameter.PASS_BY_VALUE, length = 8)
+	@JT400Argument(type = AS400DataType.TYPE_TEXT, length = 8)
 	String formatName = "SPLF0100";
 
 	/**
@@ -63,7 +61,7 @@ public class QUSLSPL implements IJT400Params {
 	 * 	*CURRENT	Files owned by the current user
 	 */	
 	@Id(2) @Input
-	@JT400Argument(type = AS400DataType.TYPE_TEXT, pass = ProgramParameter.PASS_BY_VALUE, length = 10)
+	@JT400Argument(type = AS400DataType.TYPE_TEXT, length = 10)
 	String userName;
 	
 	/**
@@ -87,7 +85,7 @@ public class QUSLSPL implements IJT400Params {
 	 *	*LIBL	The library list
 	 */
 	@Id(3) @Input 
-	@JT400Argument(type = AS400DataType.TYPE_TEXT, pass = ProgramParameter.PASS_BY_VALUE, length = 10)
+	@JT400Argument(type = AS400DataType.TYPE_TEXT, length = 10)
 	String outputQueueName;
 
 	/**
@@ -105,7 +103,7 @@ public class QUSLSPL implements IJT400Params {
 	 * 	*STD	Only files that specify the standard form type
 	 */
 	@Id(4) @Input
-	@JT400Argument(type = AS400DataType.TYPE_TEXT, pass = ProgramParameter.PASS_BY_VALUE, length = 10)
+	@JT400Argument(type = AS400DataType.TYPE_TEXT, length = 10)
 	String formType;
 
 	/**
@@ -122,7 +120,7 @@ public class QUSLSPL implements IJT400Params {
 	 * 	*ALL	Files with any user-specified data values
 	 */
 	@Id(5) @Input
-	@JT400Argument(type = AS400DataType.TYPE_TEXT, pass = ProgramParameter.PASS_BY_VALUE, length = 10)
+	@JT400Argument(type = AS400DataType.TYPE_TEXT, length = 10)
 	String userSpecifiedData;
 
 	/**
@@ -131,7 +129,7 @@ public class QUSLSPL implements IJT400Params {
 	 * If this parameter is omitted, diagnostic and escape messages are issued to the application.
 	 */
 	@Id(6) @Input @Output
-	@JT400Argument(type = AS400DataType.TYPE_BYTE_ARRAY, pass = ProgramParameter.PASS_BY_REFERENCE)
+	@JT400Argument(type = AS400DataType.TYPE_BYTE_ARRAY)
 	ByteBuffer errorCode;
 
 	/**
@@ -150,7 +148,7 @@ public class QUSLSPL implements IJT400Params {
 	 *   If this parameter is omitted, the API assumes all blanks.
 	 */
 	@Id(7) @Input 
-	@JT400Argument(type = AS400DataType.TYPE_BYTE_ARRAY, pass = ProgramParameter.PASS_BY_VALUE, length = 26)
+	@JT400Argument(type = AS400DataType.TYPE_BYTE_ARRAY, length = 26)
 	String jobName;
 
 	/**
@@ -160,7 +158,7 @@ public class QUSLSPL implements IJT400Params {
 	 * This field is ignored if the number of keys for fields to return parameter is 0.
 	 */
 	@Id(8) @Input 
-	@JT400Argument(type = AS400DataType.TYPE_ARRAY, of = AS400DataType.TYPE_BIN4, pass = ProgramParameter.PASS_BY_VALUE)
+	@JT400Argument(type = AS400DataType.TYPE_ARRAY, of = AS400DataType.TYPE_BIN4)
 	List<Integer> fields;
 
 	/**
@@ -171,7 +169,7 @@ public class QUSLSPL implements IJT400Params {
 	 * If this parameter is omitted, the API assumes 0.
 	 */
 	@Id(9) @Input 
-	@JT400Argument(type = AS400DataType.TYPE_BIN4, pass = ProgramParameter.PASS_BY_VALUE)
+	@JT400Argument(type = AS400DataType.TYPE_BIN4)
 	int fieldSize;
 
 	/**
@@ -194,7 +192,7 @@ public class QUSLSPL implements IJT400Params {
 	 * If this parameter is omitted, the API assumes 0 when the qualified job name parameter is blank or not specified. The API assumes -1 if the qualified job name parameter is not blank.
 	 */
 	@Id(10) @Input 
-	@JT400Argument(type = AS400DataType.TYPE_BIN4, pass = ProgramParameter.PASS_BY_VALUE)
+	@JT400Argument(type = AS400DataType.TYPE_BIN4)
 	int auxiliaryStoragePool; 
 
 	/**
@@ -212,27 +210,27 @@ public class QUSLSPL implements IJT400Params {
 	 * 		job-system-name	Only spooled files created on the system specified are to be returned.
 	 */
 	@Id(11) @Input 
-	@JT400Argument(type = AS400DataType.TYPE_TEXT, pass = ProgramParameter.PASS_BY_VALUE, length = 8)
+	@JT400Argument(type = AS400DataType.TYPE_TEXT, length = 8)
 	String jobSystenName;
 
 	@Id(12) @Input 
-	@JT400Argument(type = AS400DataType.TYPE_TEXT, pass = ProgramParameter.PASS_BY_VALUE, length = 7)
+	@JT400Argument(type = AS400DataType.TYPE_TEXT, length = 7)
 	String startingSpooledFileCreateDate;
 	
 	@Id(13) @Input 
-	@JT400Argument(type = AS400DataType.TYPE_TEXT, pass = ProgramParameter.PASS_BY_VALUE, length = 6)
+	@JT400Argument(type = AS400DataType.TYPE_TEXT, length = 6)
 	String startingSpooledFileCreateTime;
 
 	@Id(14) @Input 
-	@JT400Argument(type = AS400DataType.TYPE_TEXT, pass = ProgramParameter.PASS_BY_VALUE, length = 7)
+	@JT400Argument(type = AS400DataType.TYPE_TEXT, length = 7)
 	String endingSpooledFileCreateDate;
 	
 	@Id(15) @Input 
-	@JT400Argument(type = AS400DataType.TYPE_TEXT, pass = ProgramParameter.PASS_BY_VALUE, length = 6)
+	@JT400Argument(type = AS400DataType.TYPE_TEXT, length = 6)
 	String endingSpooledFileCreateTime;
 	
 	@Id(16) @Input 
-	@JT400Argument(type = AS400DataType.TYPE_TEXT, pass = ProgramParameter.PASS_BY_VALUE, length = 10)
+	@JT400Argument(type = AS400DataType.TYPE_TEXT, length = 10)
 	String auxiliaryStoragePoolDeviceName;
 	
 	public String getUserSpaceName() {

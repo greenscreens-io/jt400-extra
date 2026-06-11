@@ -1,8 +1,5 @@
 /*
- * Copyright (C) 2015, 2025 Green Screens Ltd.
- *
- * https://www.greenscreens.io
- *
+ * Copyright (C) 2015, 2026 Green Screens Ltd.
  */
 package io.greenscreens.jt400;
 
@@ -61,7 +58,7 @@ public final class ERRC0200 implements IJT400Format {
 	@Id(8) @Output
 	@JT400Ref(offset = 24, length = 28)
 	@JT400Format(type = AS400DataType.TYPE_TEXT)
-	ByteBuffer data;
+	String data;
 
 	@Override
 	public String toString() {
@@ -77,14 +74,11 @@ public final class ERRC0200 implements IJT400Format {
 	 */
 	public static ByteBuffer toBuffer(final int key, final int size) {
 
-		final AS400Bin4 bin4 = new AS400Bin4();
-		final ByteBuffer buffer = ByteBuffer.allocate(size + 32);
-
-		buffer.put(bin4.toBytes(key));
-		buffer.put(bin4.toBytes(size));
-		buffer.rewind();
-
-		return buffer;
+		final AS400Bin4 bin4 = JT400ExtBinaryConverter.BIN4_CONVERTER;
+		return ByteBuffer.allocate(size + 32)
+			.put(bin4.toBytes(key))
+			.put(bin4.toBytes(size))
+			.rewind();
 	}
 
 }

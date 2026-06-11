@@ -15,7 +15,6 @@ import io.greenscreens.jt400.interfaces.IJT400Format;
 /**
  * Writer inform<tion
  */
-@Id(value = 0)
 @JT400Format(length = 12)
 public class FILTERINFO_PRINTER implements IJT400Format {
 

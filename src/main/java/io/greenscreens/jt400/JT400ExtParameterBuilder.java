@@ -1,8 +1,5 @@
 /*
- * Copyright (C) 2015, 2025 Green Screens Ltd.
- *
- * https://www.greenscreens.io
- *
+ * Copyright (C) 2015, 2026 Green Screens Ltd.
  */
 package io.greenscreens.jt400;
 
@@ -10,29 +7,10 @@ import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.Date;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.List;
 
 import com.ibm.as400.access.AS400;
-import com.ibm.as400.access.AS400Bin1;
-import com.ibm.as400.access.AS400Bin2;
-import com.ibm.as400.access.AS400Bin4;
-import com.ibm.as400.access.AS400Bin8;
-import com.ibm.as400.access.AS400ByteArray;
 import com.ibm.as400.access.AS400DataType;
-import com.ibm.as400.access.AS400Date;
-import com.ibm.as400.access.AS400Float4;
-import com.ibm.as400.access.AS400Float8;
-import com.ibm.as400.access.AS400PackedDecimal;
-import com.ibm.as400.access.AS400Text;
-import com.ibm.as400.access.AS400Time;
-import com.ibm.as400.access.AS400Timestamp;
-import com.ibm.as400.access.AS400UnsignedBin1;
-import com.ibm.as400.access.AS400UnsignedBin2;
-import com.ibm.as400.access.AS400UnsignedBin4;
-import com.ibm.as400.access.AS400UnsignedBin8;
-import com.ibm.as400.access.AS400ZonedDecimal;
 import com.ibm.as400.access.ProgramParameter;
 
 import io.greenscreens.jt400.annotations.Id;
@@ -47,20 +25,18 @@ import io.greenscreens.jt400.interfaces.IJT400Params;
  * defined annotated Java class structure
  */
 enum JT400ExtParameterBuilder {
-;
-
-	private static final Logger LOG = LoggerFactory.getLogger(JT400ExtParameterBuilder.class);
+	;
 
 	/**
 	 *
 	 * @param as400
 	 * @param obj
 	 * @return
+	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	public static  <K extends IJT400Params> ProgramParameter[] build(final AS400 as400, final K obj) {
-		final Class<K> type = (Class<K>) obj.getClass();
-		return build(as400, obj, type);
+	public static <K extends IJT400Params> ProgramParameter[] build(final AS400 as400, final K obj) throws Exception {
+		return build(as400, obj, (Class<K>) obj.getClass());
 	}
 
 	/**
@@ -70,30 +46,29 @@ enum JT400ExtParameterBuilder {
 	 * @param obj
 	 * @param type
 	 * @return
+	 * @throws Exception
 	 */
-	public static  <K extends IJT400Params> ProgramParameter[] build(final AS400 as400, final K obj, final Class<K> type) {
+	public static <K extends IJT400Params> ProgramParameter[] build(final AS400 as400, final K obj, final Class<K> type) throws Exception {
 
 		final int size = JT400ExtParameterBuilder.count(type);
-		final Field[] fields = type.getDeclaredFields();
 
-		final ProgramParameter [] list = new ProgramParameter[size];
+		final List<Field> fields = JT400ExtUtil.getFields(type);
 
-		Id id = null;
+		final ProgramParameter [] list = new ProgramParameter[size == 0 ? fields.size() : size];
 
-		for (Field field : fields) {
-
-			id = field.getAnnotation(Id.class);
-
-			if (id == null) continue;
+		for (final Field field : fields) {
 
 			final ProgramParameter parm = build(as400, obj, field);
 			if (parm != null) {
-				list[id.value()] = parm;
+				list[field.getAnnotation(Id.class).value()] = parm;
 			}
-		}
 
+		}
 		return list;
 	}
+
+	private static final byte BYTE_ZERO = 0;
+	private static final short SHORT_ZERO = 0;
 
 	/**
 	 * Build a single parameter definition based on provided param descriptor class
@@ -101,150 +76,107 @@ enum JT400ExtParameterBuilder {
 	 * @param as400
 	 * @param obj
 	 * @param field
-	 * @param ann
 	 * @return
 	 */
-	private static  <K extends IJT400Params> ProgramParameter build(final AS400 as400, final K obj, final Field field) {
-
-		ProgramParameter parameter = null;
-
-		try {
-			parameter = buildAnnotated(as400, obj, field);
-		} catch (Exception e) {
-			LOG.error(e.getMessage());
-			LOG.debug(e.getMessage(), e);
-		}
-
-		return parameter;
-	}
-
-	/**
-	 *
-	 * @param as400
-	 * @param obj
-	 * @param field
-	 * @return
-	 * @throws Exception
-	 */
-	private static  <K extends IJT400Params> ProgramParameter buildAnnotated(final AS400 as400, final K obj, final Field field) throws Exception {
+	private static <K extends IJT400Params> ProgramParameter build(final AS400 as400, final K obj, final Field field) throws Exception {
 
 		final JT400Argument ann = field.getAnnotation(JT400Argument.class);
-		if (ann == null) return null;
+		if (ann == null) {
+			return null;
+		}
 
 		final Input input = field.getAnnotation(Input.class);
 		final Output output = field.getAnnotation(Output.class);
 		final Class<?> clazz = field.getType();
-		
+
 		Object val = null;
 		AS400DataType dataType = null;
 
+		int length = ann.length();
+
 		switch (ann.type()) {
 		case AS400DataType.TYPE_BIN1:
-			final byte val1 = getFieldValue(obj, field, (byte) 0);
-			val = val1;
-			dataType = new AS400Bin1();
+			val = asByte(field, obj, BYTE_ZERO);
 			break;
 		case AS400DataType.TYPE_BIN2:
-			final short val2 = getFieldValue(obj, field, (short) 0);
-			val = val2;
-			dataType = new AS400Bin2();
+			val = asShort(field, obj, SHORT_ZERO);
 			break;
 		case AS400DataType.TYPE_BIN4:
-			final int val4 = getFieldValue(obj, field, 0);
-			val = val4;
-			dataType = new AS400Bin4();
+			val = asInt(field, obj, 0);
 			break;
 		case AS400DataType.TYPE_BIN8:
-			final long val8 = getFieldValue(obj, field, (long) 0);
-			val = val8;
-			dataType = new AS400Bin8();
+			val = asLong(field, obj, 0l);
 			break;
 		case AS400DataType.TYPE_UBIN1:
-			final byte uval1 = getFieldValue(obj, field, (byte) 0);
-			dataType = new AS400UnsignedBin1();
-			val = uval1;
+			val = asByte(field, obj, BYTE_ZERO);
 			break;
 		case AS400DataType.TYPE_UBIN2:
-			final short uval2 = getFieldValue(obj, field, (short) 0);
-			val = uval2;
-			dataType = new AS400UnsignedBin2();
+			val = asShort(field, obj, SHORT_ZERO);
 			break;
 		case AS400DataType.TYPE_UBIN4:
-			final int uval4 = getFieldValue(obj, field, 0);
-			val = uval4;
-			dataType = new AS400UnsignedBin4();
+			val = asInt(field, obj, 0);
 			break;
 		case AS400DataType.TYPE_UBIN8:
-			final long uval8 = getFieldValue(obj, field, (long) 0);
-			val = uval8;
-			dataType = new AS400UnsignedBin8();
+			val = asLong(field, obj, 0l);
 			break;
 		case AS400DataType.TYPE_FLOAT4:
-			final float float4 = getFieldValue(obj, field, (float) 0);
-			val = float4;
-			dataType = new AS400Float4();
+			val = asFloat(field, obj, 0.0f);
 			break;
 		case AS400DataType.TYPE_FLOAT8:
-			final double double8 = getFieldValue(obj, field, (float) 0);
-			val = double8;
-			dataType = new AS400Float8();
+			val = asDouble(field, obj, 0.0d);
 			break;
 		case AS400DataType.TYPE_ZONED:
-			final BigDecimal decZ = getFieldValue(obj, field, new BigDecimal(0));
-			val = decZ;
-			dataType = new AS400ZonedDecimal(ann.length(), ann.decimals());
+			val = asBigDecimal(field, obj, new BigDecimal(0));
 			break;
 		case AS400DataType.TYPE_PACKED:
-			final BigDecimal decP = getFieldValue(obj, field, new BigDecimal(0));
-			val = decP;
-			dataType = new AS400PackedDecimal(ann.length(), ann.decimals());
+			val = asBigDecimal(field, obj, new BigDecimal(0));
 			break;
 		case AS400DataType.TYPE_DATE:
-			final Date date = getFieldValue(obj, field, null);
-			val = date;
-			dataType = new AS400Date();
+			val = asDate(field, obj, null);
 			break;
 		case AS400DataType.TYPE_TIME:
-			final Date time = getFieldValue(obj, field, null);
-			val = time;
-			dataType = new AS400Time();
+			val = asDate(field, obj, null);
 			break;
 		case AS400DataType.TYPE_TIMESTAMP:
-			final Date timestamp = getFieldValue(obj, field, null);
-			val = timestamp;
-			dataType = new AS400Timestamp();
+			val = asDate(field, obj, null);
 			break;
 		case AS400DataType.TYPE_BYTE_ARRAY:
 
-			int lena = ann.length();
 			byte [] tmp = null;
-			
-			if (clazz == ByteBuffer.class) {
-				final ByteBuffer data = getFieldValue(obj, field);
-				if (data != null) tmp = data.array();
-			} else if (clazz == byte[].class) {
-				tmp = getFieldValue(obj, field);
-			} else {
-				tmp = new byte[lena];		
-			}
-			
-			val = tmp;
-			if (tmp != null) lena = tmp.length;
-			if (val == null) val = new byte[lena];
 
-			dataType = new AS400ByteArray(lena);
+			if (clazz == ByteBuffer.class) {
+				final ByteBuffer data = JT400ExtUtil.getFieldValue(field, obj);
+				if (data != null) {
+					tmp = data.array();
+				}
+			} else if (clazz == byte[].class) {
+				tmp = JT400ExtUtil.getFieldValue(field, obj);
+			} else {
+				tmp = new byte[length];
+			}
+
+			val = tmp;
+			if (tmp != null) {
+				length = tmp.length;
+			}
+			if (val == null) {
+				val = new byte[length];
+			}
+
 			break;
 		case AS400DataType.TYPE_TEXT:
-			int len = ann.length();
-			final String txt = getFieldValue(obj, field, "");
-			if (txt != null && len == 0) len = txt.length();
+			final String txt = JT400ExtUtil.getFieldValue(field, obj, "");
+			if (txt != null && length == 0) {
+				length = txt.length();
+			}
 			val = txt;
-			dataType = new AS400Text(len, as400);
 			break;
 
 		default:
 			break;
 		}
+
+		dataType = JT400ExtUtil.toAS400DataType(as400, field, ann.type(), length, ann.decimals());
 
 		if (dataType == null) {
 			return null;
@@ -263,15 +195,47 @@ enum JT400ExtParameterBuilder {
 		}
 
 		if (isInputOnly && isInputData) {
-				parameter.setInputData(dataType.toBytes(val));
+			parameter.setInputData(dataType.toBytes(val));
 		}
 
-		if (isInputOutput) {			
+		if (isInputOutput) {
 			parameter.setInputData(dataType.toBytes(val));
 			parameter.setOutputDataLength(dataType.getByteLength());
 		}
 
 		return parameter;
+	}
+
+	static byte asByte(final Field field, final Object obj, final byte def) throws Exception {
+		return JT400ExtUtil.getFieldValue(field, obj, def);
+	}
+
+	static short asShort(final Field field, final Object obj, final short def) throws Exception {
+		return JT400ExtUtil.getFieldValue(field, obj, def);
+	}
+
+	static int asInt(final Field field, final Object obj, final int def) throws Exception {
+		return JT400ExtUtil.getFieldValue(field, obj, def);
+	}
+
+	static long asLong(final Field field, final Object obj, final long def) throws Exception {
+		return JT400ExtUtil.getFieldValue(field, obj, def);
+	}
+
+	static float asFloat(final Field field, final Object obj, final float def) throws Exception {
+		return JT400ExtUtil.getFieldValue(field, obj, def);
+	}
+
+	static double asDouble(final Field field, final Object obj, final double def) throws Exception {
+		return JT400ExtUtil.getFieldValue(field, obj, def);
+	}
+
+	static Date asDate(final Field field, final Object obj, final Date def) throws Exception {
+		return JT400ExtUtil.getFieldValue(field, obj, def);
+	}
+
+	static BigDecimal asBigDecimal(final Field field, final Object obj, final BigDecimal def) throws Exception {
+		return JT400ExtUtil.getFieldValue(field, obj, def);
 	}
 
 	/**
@@ -281,64 +245,19 @@ enum JT400ExtParameterBuilder {
 	 * @param type
 	 * @return
 	 */
-	private static  <K extends IJT400Params> int count(final Class<K> type) {
+	private static <K extends IJT400Params> int count(final Class<K> type) {
 
-		final JT400Program pgm = type.getAnnotation(JT400Program.class);
-
-		if (pgm != null) return pgm.arguments();
-
-		int order = 0;
-		Id id = null;
-
-		final Field[] fields = type.getFields();
-
-		for (Field field : fields) {
-
-			id = field.getAnnotation(Id.class);
-
-			if (id != null) {
-				order = Math.max(order, id.value());
-			}
-
+		if (type.isAnnotationPresent(JT400Program.class)) {
+			return type.getAnnotation(JT400Program.class).arguments();
 		}
 
-		return order;
-	}
+		return JT400ExtUtil.getFields(type)
+				.stream()
+				.map(field -> field.getAnnotation(Id.class))
+				.mapToInt(Id::value)
+				.max()
+				.orElse(0);
 
-	/**
-	 * Generic field get value
-	 *
-	 * @param obj
-	 * @param field
-	 * @param def
-	 * @return
-	 */
-	@SuppressWarnings("unchecked")
-	private static  <T> T getFieldValue(final Object obj, final Field field, final T def) {
-
-		if (obj == null) return def;
-
-		try {
-			JT400ExtUtil.enableField(field);
-			T val = (T) field.get(obj);
-			if (val != null) return val;
-		} catch (Exception e) {
-			LOG.error(e.getMessage());
-			LOG.debug(e.getMessage(), e);
-		}
-
-		return def;
-	}
-
-	/**
-	 *
-	 *
-	 * @param obj
-	 * @param field
-	 * @return
-	 */
-	private static  <T> T getFieldValue(final Object obj, final Field field) {
-		return getFieldValue(obj, field, null);
 	}
 
 }

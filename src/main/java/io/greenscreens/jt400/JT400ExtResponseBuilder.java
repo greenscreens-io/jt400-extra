@@ -1,13 +1,11 @@
 /*
- * Copyright (C) 2015, 2025 Green Screens Ltd.
- *
- * https://www.greenscreens.io
- *
+ * Copyright (C) 2015, 2026 Green Screens Ltd.
  */
 package io.greenscreens.jt400;
 
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
+import java.util.List;
 
 import com.ibm.as400.access.AS400;
 import com.ibm.as400.access.AS400DataType;
@@ -17,7 +15,6 @@ import com.ibm.as400.access.ServiceProgramCall;
 
 import io.greenscreens.jt400.annotations.Id;
 import io.greenscreens.jt400.annotations.JT400Argument;
-import io.greenscreens.jt400.annotations.Output;
 import io.greenscreens.jt400.interfaces.IJT400Params;
 
 /**
@@ -25,7 +22,7 @@ import io.greenscreens.jt400.interfaces.IJT400Params;
  * with received values.
  */
 enum JT400ExtResponseBuilder {
-;
+	;
 	enum TYPE {UNKNOWN, DEFAULT, BUFFER, BYTE_ARRAY}
 
 	/**
@@ -37,53 +34,46 @@ enum JT400ExtResponseBuilder {
 	 * @return
 	 * @throws Exception
 	 */
-	public static  <K extends IJT400Params> void build(final ProgramCall programCall, final K params, final Class<K> args) throws Exception {
+	public static <K extends IJT400Params> void build(final ProgramCall programCall, final K params, final Class<K> args) throws Exception {
 
 		final ProgramParameter[] argList = programCall.getParameterList();
-		final Field[] fields = args.getDeclaredFields();
 
-		if (argList == null) return;
-
-		Output output = null;
-		Id arg = null;
-
-		for (Field field : fields) {
-			
-			arg = field.getAnnotation(Id.class);
-			output = field.getAnnotation(Output.class);
-			
-			if (arg == null || output == null) continue;
-
-			build(programCall, params, args, field);
-
+		if (argList == null) {
+			return;
 		}
-		
+
+		final List<Field> fields = JT400ExtUtil.getOutputFields(args);
+
+		for (final Field field : fields) {
+			build(programCall, params, args, field);
+		}
+
 	}
 
 	/**
 	 * Fill output service program parameters with received values
-	 * 
+	 *
 	 * @param programCall
 	 * @param params
 	 * @param args
 	 * @throws Exception
 	 */
-	public static    <K extends IJT400Params> void build(final ServiceProgramCall programCall, final K params, final Class<K> args) throws Exception {
+	public static <K extends IJT400Params> void build(final ServiceProgramCall programCall, final K params, final Class<K> args) throws Exception {
 
 		if (programCall.getReturnValueFormat() == ServiceProgramCall.RETURN_INTEGER) {
-			
+
 			final Field retVal = args.getField("returnValue");
-			
+
 			if (retVal != null && retVal.getType() == int.class) {
-					final int val = programCall.getIntegerReturnValue();
-					JT400ExtUtil.setField(retVal, params, val);	
+				final int val = programCall.getIntegerReturnValue();
+				JT400ExtUtil.setField(retVal, params, val);
 			}
-			
+
 		}
-		
+
 		build((ProgramCall) programCall, params, args);
 	}
-	
+
 	/**
 	 *
 	 * @param programCall
@@ -92,7 +82,7 @@ enum JT400ExtResponseBuilder {
 	 * @param field
 	 * @throws Exception
 	 */
-	public static    <K extends IJT400Params> void build(final ProgramCall programCall, final K params, final Class<K> args, final Field field) throws Exception {
+	public static <K extends IJT400Params> void build(final ProgramCall programCall, final K params, final Class<K> args, final Field field) throws Exception {
 
 		final JT400Argument jt400Arg = field.getAnnotation(JT400Argument.class);
 		final Id id = field.getAnnotation(Id.class);
@@ -104,59 +94,58 @@ enum JT400ExtResponseBuilder {
 
 		final byte[] response = argList[id.value()].getOutputData();
 
-		if (response == null) return;
+		if (response == null) {
+			return;
+		}
 
-		JT400ExtUtil.enableField(field);
-		
 		final TYPE type = getFieldType(field);
 		Object value = null;
 
 		switch (type) {
-			case BUFFER: 
-				final ByteBuffer data = (ByteBuffer) field.get(params);
-				if (data == null) {
-					value = ByteBuffer.wrap(response);
-				} else {
-					data.rewind();
-					data.put(response);
-				}
-				break;		
-			case BYTE_ARRAY: 
-				value = response;
-				break;		
-			case DEFAULT: 
-				value = getValue(programCall.getSystem(), field, jt400Arg, response);
-				break;		
-			default:
-	
+		case BUFFER:
+			final ByteBuffer data = (ByteBuffer) JT400ExtUtil.getFieldValue(field, params);
+			if (data == null) {
+				value = ByteBuffer.wrap(response);
+			} else {
+				value = data.rewind().put(response).rewind();
+			}
+			break;
+		case BYTE_ARRAY:
+			value = response;
+			break;
+		case DEFAULT:
+			value = getValue(programCall.getSystem(), field, jt400Arg, response);
+			break;
+		default:
+
 		}
 
 		JT400ExtUtil.setField(field, params, value);
 	}
-	
+
 	/**
 	 * Field output format
 	 * @param field
 	 * @return
 	 */
 	private static  TYPE getFieldType(final Field field) {
-		
+
 		final Class<?> clazz = field.getType();
-		
+
 		if (clazz == ByteBuffer.class) {
 			return TYPE.BUFFER;
 		}
-		
+
 		if (clazz == byte[].class) {
 			return TYPE.BYTE_ARRAY;
 		}
-		
+
 		if (!clazz.isArray()) {
 			return TYPE.DEFAULT;
 		}
-		
+
 		return TYPE.UNKNOWN;
-			
+
 	}
 
 	/**

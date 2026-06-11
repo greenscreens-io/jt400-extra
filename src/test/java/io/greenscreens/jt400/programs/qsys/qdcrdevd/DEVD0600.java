@@ -6,7 +6,6 @@
  */
 package io.greenscreens.jt400.programs.qsys.qdcrdevd;
 
-import io.greenscreens.jt400.annotations.Id;
 import io.greenscreens.jt400.annotations.JT400Format;
 
 /**
@@ -15,7 +14,6 @@ import io.greenscreens.jt400.annotations.JT400Format;
  *
  * Detailed information for device category *DSP
  */
-@Id(value = 0)
 @JT400Format(length = 1124)
 public class DEVD0600 extends DEVD0100 {
 

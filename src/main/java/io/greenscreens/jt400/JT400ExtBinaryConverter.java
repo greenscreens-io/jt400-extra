@@ -1,8 +1,5 @@
 /*
- * Copyright (C) 2015, 2025 Green Screens Ltd.
- *
- * https://www.greenscreens.io
- *
+ * Copyright (C) 2015, 2026 Green Screens Ltd.
  */
 package io.greenscreens.jt400;
 
@@ -13,6 +10,8 @@ import java.nio.ByteBuffer;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.TimeZone;
 
 import com.ibm.as400.access.AS400;
@@ -41,7 +40,30 @@ import io.greenscreens.jt400.annotations.JT400Format;
  * Convert from byte array to specified field type / jt400 type
  */
 enum JT400ExtBinaryConverter {
-;
+	;
+
+	static final AS400Bin1 BIN1_CONVERTER = new AS400Bin1();
+	static final AS400Bin2 BIN2_CONVERTER = new AS400Bin2();
+	static final AS400Bin4 BIN4_CONVERTER = new AS400Bin4();
+	static final AS400Bin8 BIN8_CONVERTER = new AS400Bin8();
+
+	static final AS400UnsignedBin1 UBIN1_CONVERTER = new AS400UnsignedBin1();
+	static final AS400UnsignedBin2 UBIN2_CONVERTER = new AS400UnsignedBin2();
+	static final AS400UnsignedBin4 UBIN4_CONVERTER = new AS400UnsignedBin4();
+	static final AS400UnsignedBin8 UBIN8_CONVERTER = new AS400UnsignedBin8();
+
+	static final AS400Float4 FLOAT4_CONVERTER = new AS400Float4();
+	static final AS400Float8 FLOAT8_CONVERTER = new AS400Float8();
+
+	static final ThreadLocal<Map<Integer, AS400DecFloat>> THREAD_DEC_POOL = ThreadLocal.withInitial(HashMap::new);
+	static final ThreadLocal<Map<Long, AS400ZonedDecimal>> THREAD_ZONED_POOL = ThreadLocal.withInitial(HashMap::new);
+	static final ThreadLocal<Map<Long, AS400PackedDecimal>> THREAD_PACKED_POOL = ThreadLocal.withInitial(HashMap::new);
+
+	static final ThreadLocal<Map<Long, AS400Date>> THREAD_DATE_POOL = ThreadLocal.withInitial(HashMap::new);
+	static final ThreadLocal<Map<Long, AS400Time>> THREAD_TIME_POOL = ThreadLocal.withInitial(HashMap::new);
+	static final ThreadLocal<Map<Integer, AS400Timestamp>> THREAD_TIMESTAMP_POOL = ThreadLocal.withInitial(HashMap::new);
+
+	static final ThreadLocal<Map<Long, AS400Text>> THREAD_TEXT_POOL = ThreadLocal.withInitial(HashMap::new);
 
 	/**
 	 * Helper method for getting reference length or offset
@@ -50,11 +72,10 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 */
 	public static  int getIntValue(final ByteBuffer buffer, final int offset) {
-		final AS400Bin4 bin4 = new AS400Bin4();
 		final byte [] tmp = JT400ExtUtil.getBytesFrom(buffer, offset, 4);
-		return bin4.toInt(tmp);
+		return BIN4_CONVERTER.toInt(tmp);
 	}
-	
+
 	/**
 	 * Convert byte data from AS400Bin1
 	 * @param as400
@@ -66,23 +87,19 @@ enum JT400ExtBinaryConverter {
 	 */
 	static  Object asAS400Bin1(final Field field, final byte[] tmp) {
 
-		Object value = null;
-
-		final AS400Bin1 bin1 = new AS400Bin1();
-
 		final Class<?> clazz = field.getType();
-		
-		if (clazz == boolean.class) {
-			value = bin1.toByte(tmp) == 1;
-		} else if (clazz == Boolean.class) {
-			value = Boolean.valueOf(bin1.toByte(tmp) == 1);
-		} else if (clazz == byte.class) {
-			value = bin1.toByte(tmp);
-		} else if (clazz == Byte.class) {
-			value = bin1.toObject(tmp);
-		} else throw new RuntimeException("Boolean, boolean, Byte or byte type supported for AS400Bin1");
 
-		return value;
+		if (clazz == boolean.class) {
+			return BIN1_CONVERTER.toByte(tmp) == 1;
+		} else if (clazz == Boolean.class) {
+			return Boolean.valueOf(BIN1_CONVERTER.toByte(tmp) == 1);
+		} else if (clazz == byte.class) {
+			return  BIN1_CONVERTER.toByte(tmp);
+		} else if (clazz == Byte.class) {
+			return  BIN1_CONVERTER.toObject(tmp);
+		}
+
+		throw new RuntimeException("Boolean, boolean, Byte or byte type supported for AS400Bin1");
 	}
 
 	/**
@@ -96,17 +113,15 @@ enum JT400ExtBinaryConverter {
 	 */
 	static  Object asAS400Bin2(final Field field, final byte[] tmp) {
 
-		Object value = null;
-		final AS400Bin2 bin2 = new AS400Bin2();
 		final Class<?> clazz = field.getType();
-		
-		if (clazz == short.class) {
-			value = bin2.toShort(tmp);
-		} else if (clazz == Short.class) {
-			value = bin2.toObject(tmp);
-		} else throw new RuntimeException("Short or short type supported for AS400Bin2");
 
-		return value;
+		if (clazz == short.class) {
+			return BIN2_CONVERTER.toShort(tmp);
+		} else if (clazz == Short.class) {
+			return BIN2_CONVERTER.toObject(tmp);
+		}
+
+		throw new RuntimeException("Short or short type supported for AS400Bin2");
 	}
 
 	/**
@@ -120,18 +135,15 @@ enum JT400ExtBinaryConverter {
 	 */
 	static  Object asAS400Bin4(final Field field, final byte[] tmp) {
 
-		Object value = null;
-
-		final AS400Bin4 bin4 = new AS400Bin4();
 		final Class<?> clazz = field.getType();
-		
-		if (clazz == int.class) {
-			value = bin4.toInt(tmp);
-		} else if (clazz == Integer.class) {
-			value = bin4.toObject(tmp);
-		} else throw new RuntimeException("Integer or int type supported for AS400Bin4");
 
-		return value;
+		if (clazz == int.class) {
+			return BIN4_CONVERTER.toInt(tmp);
+		} else if (clazz == Integer.class) {
+			return BIN4_CONVERTER.toObject(tmp);
+		}
+
+		throw new RuntimeException("Integer or int type supported for AS400Bin4");
 	}
 
 	/**
@@ -145,18 +157,15 @@ enum JT400ExtBinaryConverter {
 	 */
 	static  Object asAS400Bin8(final Field field, final byte[] tmp) {
 
-		Object value = null;
-
-		final AS400Bin8 bin8 = new AS400Bin8();
 		final Class<?> clazz = field.getType();
-		
-		if (clazz == long.class) {
-			value = bin8.toLong(tmp);
-		} else if (clazz == Long.class) {
-			value = bin8.toObject(tmp);
-		} else throw new RuntimeException("Long or long type supported for AS400UnsignedBin1");
 
-		return value;
+		if (clazz == long.class) {
+			return BIN8_CONVERTER.toLong(tmp);
+		} else if (clazz == Long.class) {
+			return BIN8_CONVERTER.toObject(tmp);
+		}
+
+		throw new RuntimeException("Long or long type supported for AS400UnsignedBin1");
 	}
 
 	/**
@@ -170,18 +179,15 @@ enum JT400ExtBinaryConverter {
 	 */
 	static  Object asAS400UBin1(final Field field, final byte[] tmp) {
 
-		Object value = null;
-
-		final AS400UnsignedBin1 ubin1 = new AS400UnsignedBin1();
 		final Class<?> clazz = field.getType();
-		
-		if (clazz == short.class) {
-			value = ubin1.toShort(tmp);
-		} else if (clazz == Short.class) {
-			value = ubin1.toObject(tmp);
-		} else throw new RuntimeException("Short or short type supported for AS400UnsignedBin1");
 
-		return value;
+		if (clazz == short.class) {
+			return UBIN1_CONVERTER.toShort(tmp);
+		} else if (clazz == Short.class) {
+			return  UBIN1_CONVERTER.toObject(tmp);
+		}
+
+		throw new RuntimeException("Short or short type supported for AS400UnsignedBin1");
 	}
 
 	/**
@@ -195,18 +201,15 @@ enum JT400ExtBinaryConverter {
 	 */
 	static  Object asAS400UBin2(final Field field, final byte[] tmp) {
 
-		Object value = null;
-
-		final AS400UnsignedBin2 ubin2 = new AS400UnsignedBin2();
 		final Class<?> clazz = field.getType();
-		
-		if (clazz == int.class) {
-			value = ubin2.toInt(tmp);
-		} else if (clazz == Integer.class) {
-			value = ubin2.toObject(tmp);
-		} else throw new RuntimeException("Integer or int type supported for AS400UnsignedBin2");
 
-		return value;
+		if (clazz == int.class) {
+			return UBIN2_CONVERTER.toInt(tmp);
+		} else if (clazz == Integer.class) {
+			return UBIN2_CONVERTER.toObject(tmp);
+		}
+
+		throw new RuntimeException("Integer or int type supported for AS400UnsignedBin2");
 	}
 
 	/**
@@ -220,18 +223,15 @@ enum JT400ExtBinaryConverter {
 	 */
 	static  Object asAS400UBin4(final Field field, final byte[] tmp) {
 
-		Object value = null;
-
-		final AS400UnsignedBin4 ubin4 = new AS400UnsignedBin4();
 		final Class<?> clazz = field.getType();
-		
-		if (clazz == long.class) {
-			value = ubin4.toLong(tmp);
-		} else if (clazz == Long.class) {
-			value = ubin4.toObject(tmp);
-		} else throw new RuntimeException("Long or long type supported for AS400UnsignedBin4");
 
-		return value;
+		if (clazz == long.class) {
+			return UBIN4_CONVERTER.toLong(tmp);
+		} else if (clazz == Long.class) {
+			return UBIN4_CONVERTER.toObject(tmp);
+		}
+
+		throw new RuntimeException("Long or long type supported for AS400UnsignedBin4");
 	}
 
 	/**
@@ -245,14 +245,11 @@ enum JT400ExtBinaryConverter {
 	 */
 	static  Object asAS400UBin8(final Field field, final byte[] tmp) {
 
-		Object value = null;
-
-		final AS400UnsignedBin8 ubin8 = new AS400UnsignedBin8();
 		if (field.getType() == BigInteger.class) {
-			value = ubin8.toBigInteger(tmp);
-		} else throw new RuntimeException("BigInteger type supported for AS400UnsignedBin8");
+			return UBIN8_CONVERTER.toBigInteger(tmp);
+		}
 
-		return value;
+		throw new RuntimeException("BigInteger type supported for AS400UnsignedBin8");
 	}
 
 	/**
@@ -266,18 +263,15 @@ enum JT400ExtBinaryConverter {
 	 */
 	static  Object asAS400Float4(final Field field, final byte[] tmp) {
 
-		Object value = null;
-
-		final AS400Float4 float4 = new AS400Float4();
 		final Class<?> clazz = field.getType();
-		
-		if (clazz == float.class) {
-			value = float4.toFloat(tmp);
-		} else if (clazz == Float.class) {
-			value = float4.toObject(tmp);
-		} else throw new RuntimeException("Float or float type supported for AS400Float4");
 
-		return value;
+		if (clazz == float.class) {
+			return FLOAT4_CONVERTER.toFloat(tmp);
+		} else if (clazz == Float.class) {
+			return FLOAT4_CONVERTER.toObject(tmp);
+		}
+
+		throw new RuntimeException("Float or float type supported for AS400Float4");
 	}
 
 	/**
@@ -291,18 +285,15 @@ enum JT400ExtBinaryConverter {
 	 */
 	static  Object asAS400Float8(final Field field, final byte[] tmp) {
 
-		Object value = null;
-
-		final AS400Float8 float8 = new AS400Float8();
 		final Class<?> clazz = field.getType();
-		
-		if (clazz == double.class) {
-			value = float8.toDouble(tmp);
-		} else if (clazz == Double.class) {
-			value = float8.toObject(tmp);
-		} else throw new RuntimeException("Double or double type supported for AS400Float8");
 
-		return value;
+		if (clazz == double.class) {
+			return  FLOAT8_CONVERTER.toDouble(tmp);
+		} else if (clazz == Double.class) {
+			return FLOAT8_CONVERTER.toObject(tmp);
+		}
+
+		throw new RuntimeException("Double or double type supported for AS400Float8");
 	}
 
 	/**
@@ -314,22 +305,21 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 * @throws Exception
 	 */
-	static  Object asAS400DecFloat(final Field field, final int decimal, final byte[] tmp) {
+	static Object asAS400DecFloat(final Field field, final int decimal, final byte[] tmp) {
 
-		Object value = null;
-
-		final AS400DecFloat decFloat = new AS400DecFloat(decimal);
 		final Class<?> clazz = field.getType();
-		
-		if (clazz == double.class) {
-			value = decFloat.toDouble(tmp);
-		} else if (clazz == Double.class) {
-			value = Double.valueOf(decFloat.toDouble(tmp));
-		} else if (clazz == BigDecimal.class) {
-			value = decFloat.toObject(tmp);
-		} else throw new RuntimeException("BigDecimal, Double or double type supported for AS400DecFloat");
 
-		return value;
+		if (clazz != double.class && clazz != Double.class && clazz != BigDecimal.class) {
+			throw new IllegalArgumentException("Only BigDecimal, Double, or double types are supported for AS400ZonedDecimal");
+		}
+
+		final AS400DecFloat decFloat = THREAD_DEC_POOL.get().computeIfAbsent(decimal, k -> new AS400DecFloat(decimal));
+
+		if (clazz == double.class || clazz == Double.class) {
+			return decFloat.toDouble(tmp);
+		}
+
+		return decFloat.toObject(tmp);
 	}
 
 	/**
@@ -341,24 +331,26 @@ enum JT400ExtBinaryConverter {
 	 * @return
 	 * @throws Exception
 	 */
-	static  Object asAS400ZonedDecimal(final Field field, final int length, final int decimals, final byte[] tmp) {
+	static Object asAS400ZonedDecimal(final Field field, final int length, final int decimals, final byte[] tmp) {
 
-		Object value = null;
-
-		final AS400ZonedDecimal zoned = new AS400ZonedDecimal(length, decimals);
 		final Class<?> clazz = field.getType();
-		
-		if (clazz == double.class) {
-			value = zoned.toDouble(tmp);
-		} else if (clazz == Double.class) {
-			zoned.setUseDouble(true);
-			value = zoned.toObject(tmp);
-		} else if (clazz == BigDecimal.class) {
-			zoned.setUseDouble(false);
-			value = zoned.toObject(tmp);
-		} else throw new RuntimeException("BigDecimal, Double or double type supported for AS400ZonedDecimal");
 
-		return value;
+		if (clazz != double.class && clazz != Double.class && clazz != BigDecimal.class) {
+			throw new IllegalArgumentException("Only BigDecimal, Double, or double types are supported for AS400ZonedDecimal");
+		}
+
+		final long combinedKey = ((long) length << 32) | (decimals & 0xFFFFFFFFL);
+		final AS400ZonedDecimal zoned = THREAD_ZONED_POOL.get().computeIfAbsent(combinedKey, k -> new AS400ZonedDecimal(length, decimals));
+
+		// Set the internal flag based on the class type
+		zoned.setUseDouble(clazz == Double.class);
+
+		if (clazz == double.class) {
+			return zoned.toDouble(tmp);
+		}
+
+		return zoned.toObject(tmp);
+
 	}
 
 	/**
@@ -372,22 +364,29 @@ enum JT400ExtBinaryConverter {
 	 */
 	static  Object asAS400PackedDecimal(final Field field, final int length, final int decimals, final byte[] tmp) {
 
-		Object value = null;
-
-		final AS400PackedDecimal packed = new AS400PackedDecimal(length, decimals);
 		final Class<?> clazz = field.getType();
-		
-		if (clazz == double.class) {
-			value = packed.toDouble(tmp);
-		} else if (clazz == Double.class) {
-			packed.setUseDouble(true);
-			value = packed.toObject(tmp);
-		} else if (clazz == BigDecimal.class) {
-			packed.setUseDouble(false);
-			value = packed.toObject(tmp);
-		} else throw new RuntimeException("BigDecimal, Double or double type supported for AS400PackedDecimal");
 
-		return value;
+		if (clazz != double.class && clazz != Double.class && clazz != BigDecimal.class) {
+			throw new IllegalArgumentException("Only BigDecimal, Double, or double types are supported for AS400ZonedDecimal");
+		}
+
+		final long combinedKey = ((long) length << 32) | (decimals & 0xFFFFFFFFL);
+		final AS400PackedDecimal packed = THREAD_PACKED_POOL.get().computeIfAbsent(combinedKey, k -> new AS400PackedDecimal(length, decimals));
+
+		// Set the internal flag based on the class type
+		packed .setUseDouble(clazz == Double.class);
+
+		if (clazz == double.class) {
+			return packed.toDouble(tmp);
+		}
+
+		return packed .toObject(tmp);
+
+	}
+
+	static private long toKey(final TimeZone timeZone, final int format) {
+		final int tzHash = (timeZone == null) ? 0 : timeZone.hashCode();
+		return ((long) tzHash << 32) | (format & 0xFFFFFFFFL);
 	}
 
 	/**
@@ -401,15 +400,11 @@ enum JT400ExtBinaryConverter {
 	 */
 	static  Object asAS400Date(final TimeZone timeZone, final Field field, final int format, final byte[] tmp)  throws Exception {
 
-		Object value = null;
+		if (field.getType() != Date.class) {
+			throw new IllegalArgumentException("Only Time type is supported for AS400Date");
+		}
 
-		if (field.getType() == Date.class) {
-			//char sep = getDateSeparator(format.format());
-			final AS400Date date = new AS400Date(timeZone, format);
-			value = date.toObject(tmp);
-		} else throw new RuntimeException("Date type supported for AS400Date");
-
-		return value;
+		return THREAD_DATE_POOL.get().computeIfAbsent(toKey(timeZone, format), k -> new AS400Date(timeZone, format)).toObject(tmp);
 	}
 
 	/**
@@ -423,14 +418,13 @@ enum JT400ExtBinaryConverter {
 	 */
 	static  Object asAS400Time(final TimeZone timeZone, final Field field, final int format, final byte[] tmp)  throws Exception {
 
-		Object value = null;
+		if (field.getType() != Time.class) {
+			throw new IllegalArgumentException("Only Time type is supported for AS400Time");
+		}
 
-		if (field.getType() == Time.class) {
-			final AS400Time time = new AS400Time(timeZone, format);
-			value = time.toObject(tmp);
-		} else throw new RuntimeException("Time type supported for AS400Time");
+		final AS400Time as400Time = THREAD_TIME_POOL.get().computeIfAbsent(toKey(timeZone, format), k -> new AS400Time(timeZone, format));
 
-		return value;
+		return as400Time.toObject(tmp);
 	}
 
 	/**
@@ -444,14 +438,12 @@ enum JT400ExtBinaryConverter {
 	 */
 	static  Object asAS400Timestamp(final TimeZone timeZone, final Field field, final byte[] tmp) throws Exception {
 
-		Object value = null;
-
 		if (field.getType() == Timestamp.class) {
-			final AS400Timestamp timestamp = new AS400Timestamp(timeZone);
-			value = timestamp.toObject(tmp);
-		} else throw new RuntimeException("Timestamp type supported for AS400Timestamp");
+			throw new IllegalArgumentException("Only Timestamp type is supported for AS400Timestamp");
+		}
 
-		return value;
+		final int key = (timeZone == null) ? 0 : timeZone.hashCode();
+		return THREAD_TIMESTAMP_POOL.get().computeIfAbsent(key, k -> new AS400Timestamp(timeZone)).toObject(tmp);
 	}
 
 	/**
@@ -464,8 +456,13 @@ enum JT400ExtBinaryConverter {
 	 * @throws Exception
 	 */
 	static  Object asAS400Text(final AS400 as400, final Field field, final int length, final byte[] tmp) {
-		final AS400Text text = new AS400Text(length, as400);
-		return ((String)(text.toObject(tmp))).trim();
+
+		final int systemHash = (as400 == null) ? 0 : as400.getSystemName().hashCode();
+		final long combinedKey = ((long) systemHash << 32) | (length & 0xFFFFFFFFL);
+
+		final AS400Text text = THREAD_TEXT_POOL.get().computeIfAbsent(combinedKey, k -> new AS400Text(length, as400));
+
+		return ((String) text.toObject(tmp)).trim();
 	}
 
 	static char getDateSeparator(final int type) {
@@ -516,6 +513,7 @@ enum JT400ExtBinaryConverter {
 			return 4;
 		case AS400DataType.TYPE_BIN8:
 		case AS400DataType.TYPE_UBIN8:
+		case AS400DataType.TYPE_PACKED:
 			return 8;
 		case AS400DataType.TYPE_FLOAT4:
 			return 4;
@@ -535,50 +533,8 @@ enum JT400ExtBinaryConverter {
 
 	}
 
-	
 	public static AS400DataType getDataInstance(final AS400 as400, final JT400Format format, final Field field) {
-
-		switch (format.type()) {
-		case AS400DataType.TYPE_TEXT:
-			return new AS400Text(format.length(), as400);
-			
-		case AS400DataType.TYPE_BIN1:
-			return new AS400Bin1();
-		case AS400DataType.TYPE_BIN2:
-			return new AS400Bin2();
-		case AS400DataType.TYPE_BIN4:
-			return new AS400Bin4();
-		case AS400DataType.TYPE_BIN8:
-			return new AS400Bin8();
-			
-		case AS400DataType.TYPE_UBIN1:
-			return new AS400UnsignedBin1();
-		case AS400DataType.TYPE_UBIN2:
-			return new AS400UnsignedBin2();
-		case AS400DataType.TYPE_UBIN4:
-			return new AS400UnsignedBin4();
-		case AS400DataType.TYPE_UBIN8:
-			return new AS400UnsignedBin8();
-			
-		case AS400DataType.TYPE_FLOAT4:
-			return new AS400Float4();
-		case AS400DataType.TYPE_FLOAT8:
-			return new AS400Float8();
-
-		case AS400DataType.TYPE_DATE:
-			return new AS400Date();			
-		case AS400DataType.TYPE_TIME:
-			return new AS400Time();
-		case AS400DataType.TYPE_TIMESTAMP:
-			return new AS400Timestamp();
-
-		default:
-			if (String.class.isAssignableFrom(field.getType())) {
-				return new AS400Text(format.length(), as400);	
-			}
-			return null;
-		}
-
+		return JT400ExtUtil.toAS400DataType(as400, field, format.type(), format.length(), format.decimals());
 	}
 
 }

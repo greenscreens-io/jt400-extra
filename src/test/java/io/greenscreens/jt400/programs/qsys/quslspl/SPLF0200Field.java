@@ -7,8 +7,6 @@
  package io.greenscreens.jt400.programs.qsys.quslspl;
 
 import com.ibm.as400.access.AS400DataType;
-
-import io.greenscreens.jt400.annotations.Id;
 import io.greenscreens.jt400.annotations.JT400Format;
 import io.greenscreens.jt400.annotations.JT400Ref;
 import io.greenscreens.jt400.interfaces.IJT400Format;
@@ -16,7 +14,6 @@ import io.greenscreens.jt400.interfaces.IJT400Format;
  /**
   * 
   */
- @Id(value = 0)
  @JT400Format(length = 16, offset = 4)
  public class SPLF0200Field implements IJT400Format {
 

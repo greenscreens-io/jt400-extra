@@ -1,15 +1,11 @@
 /*
- * Copyright (C) 2015, 2025 Green Screens Ltd.
- *
- * https://www.greenscreens.io
- *
+ * Copyright (C) 2015, 2026 Green Screens Ltd.
  */
 package io.greenscreens.jt400;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +25,7 @@ import io.greenscreens.jt400.interfaces.IJT400Format;
  * defined Java class structure instance
  */
 enum JT400ExtFormatBuilder {
-;
+	;
 
 	/**
 	 * NORMAL - all fields with static offsets
@@ -37,7 +33,7 @@ enum JT400ExtFormatBuilder {
 	 * ALL - all annotated fields
 	 */
 	enum TYPE {NORMAL, RELATIVE, ALL}
-	
+
 	/**
 	 * Convert received byte array into JT400Format type class response definition
 	 *
@@ -67,30 +63,30 @@ enum JT400ExtFormatBuilder {
 
 		// Get all classes that makes format definition (super classes first)
 		final List<Class<T>> classes = JT400ExtUtil.getAllClass(new LinkedList<Class<T>>(), format);
-	
+
 		Stream<Class<T>> stream = null;
-		
+
 		// filter only classes without offset position
-		// process fields with fixed offsets first		
+		// process fields with fixed offsets first
 		stream = classes.stream().filter(entry -> !entry.isAnnotationPresent(JT400Ref.class));
 		build(as400, obj, data, stream, TYPE.NORMAL);
-		
+
 		// filter only classes without offset position
 		// process fields with relative offsets
-		stream = classes.stream().filter(entry -> !entry.isAnnotationPresent(JT400Ref.class));		
+		stream = classes.stream().filter(entry -> !entry.isAnnotationPresent(JT400Ref.class));
 		build(as400, obj, data, stream, TYPE.RELATIVE);
 
-		// filter classes with relative offsets 
+		// filter classes with relative offsets
 		// process fields taking byte offset position as relative
-		stream = classes.stream().filter(entry -> entry.isAnnotationPresent(JT400Ref.class));		
-		build(as400, obj, data, stream, TYPE.ALL);		
+		stream = classes.stream().filter(entry -> entry.isAnnotationPresent(JT400Ref.class));
+		build(as400, obj, data, stream, TYPE.ALL);
 
 		return obj;
 	}
 
 	/**
 	 * Convert received byte array into JT400Format type class response definition
-	 * 
+	 *
 	 * @param as400
 	 * @param obj
 	 * @param data
@@ -99,24 +95,30 @@ enum JT400ExtFormatBuilder {
 	 * @throws Exception
 	 */
 	private static <T extends IJT400Format> void build(final AS400 as400, final T obj, final ByteBuffer buffer, final Stream<Class<T>> stream, final TYPE type) {
-		
+		// TODO REFACTOR
 		stream.forEach(clazz -> {
-	    	final Map<Integer, Field> fields = toFieldMap(clazz, type);
+			final Map<Integer, Field> fields = toFieldMap(clazz, type);
 
-	    	ByteBuffer data = buffer;
+			ByteBuffer data = buffer;
 			if (clazz.isAnnotationPresent(JT400Ref.class)) {
 				data = getSlice(obj, fields, buffer);
-				if (data == null) return;
+				if (data == null) {
+					return;
+				}
 			}
-			
-			build(as400, obj, clazz, fields, data);
+
+			try {
+				build(as400, obj, clazz, fields, data);
+			} catch (final Exception e) {
+				throw new RuntimeException(e);
+			}
 		});
 
 	}
 
 	/**
 	 * Convert received byte array into JT400Format type class response definition
-	 * 
+	 *
 	 * @param as400
 	 * @param obj
 	 * @param clazz
@@ -125,27 +127,23 @@ enum JT400ExtFormatBuilder {
 	 * @return
 	 * @throws Exception
 	 */
-	private static <T extends IJT400Format> T build(final AS400 as400, final T obj, final Class<T> clazz, final Map<Integer, Field> fields, final ByteBuffer buffer) {
+	private static <T extends IJT400Format> T build(final AS400 as400, final T obj, final Class<T> clazz, final Map<Integer, Field> fields, final ByteBuffer buffer) throws Exception {
 
 		// process each annotated field
-		fields.forEach((k, field) -> {
-			try {
-				if (field.getType().isArray()) {
-					setArray(as400, obj, clazz, fields, field, buffer);
-				} else {
-					set(as400, obj, fields, field, buffer);
-				}
-			} catch (Exception e) {
-				throw new RuntimeException(e);
+		for (final Field field : fields.values()) {
+			if (field.getType().isArray()) {
+				setArray(as400, obj, clazz, fields, field, buffer);
+			} else {
+				set(as400, obj, fields, field, buffer);
 			}
-		});
+		}
 
 		return obj;
 	}
 
 	/**
 	 * Set field data of type array
-	 * 
+	 *
 	 * @param as400
 	 * @param obj
 	 * @param clazz
@@ -158,7 +156,7 @@ enum JT400ExtFormatBuilder {
 	private static <T extends IJT400Format> void setArray(final AS400 as400, final T obj, final Class<T> clazz, final Map<Integer, Field> fields, final Field field, final ByteBuffer buffer)  throws Exception {
 
 		final JT400Format fieldFormat = field.getAnnotation(JT400Format.class);
-		
+
 		final boolean isSubFormat = fieldFormat.type() == AS400DataType.TYPE_STRUCTURE;
 
 		final int dataLen = getArrayDataLength(field);
@@ -170,7 +168,7 @@ enum JT400ExtFormatBuilder {
 		int i = 0;
 
 		while (i < arraylen) {
-			byte [] tmp = JT400ExtUtil.getBytesFrom(buffer, offset + (dataLen * i), dataLen);
+			final byte [] tmp = JT400ExtUtil.getBytesFrom(buffer, offset + (dataLen * i), dataLen);
 			Object value = null;
 
 			if (isSubFormat) {
@@ -206,9 +204,15 @@ enum JT400ExtFormatBuilder {
 			return;
 		}
 
-		final int len = getDataLength(fieldformat);
+		int len = getDataLength(fieldformat);
 
-		if (len == 0) return;
+		if (len == 0) {
+			len = buffer.limit() - fieldformat.offset();
+		}
+
+		if (len == 0) {
+			return;
+		}
 
 		if (buffer.limit() < fieldformat.offset() + len) {
 			return;
@@ -243,8 +247,6 @@ enum JT400ExtFormatBuilder {
 			return;
 		}
 
-		// JAVA 14+
-		//final ByteBuffer data = buffer.slice(format.offset(), len);
 		final ByteBuffer data = slice(buffer, format.offset(), len);
 		final Class<? extends IJT400Format> clazz = (Class<? extends IJT400Format>) field.getType();
 		final Object value  = JT400ExtFormatBuilder.build(as400, clazz, data);
@@ -254,8 +256,8 @@ enum JT400ExtFormatBuilder {
 	}
 
 	/**
-	 * Get buffer slice for format with dynamic offset. being annotated with @JT400Ref 
-	 * 
+	 * Get buffer slice for format with dynamic offset. being annotated with @JT400Ref
+	 *
 	 * @param as400
 	 * @param obj
 	 * @param fields
@@ -265,15 +267,15 @@ enum JT400ExtFormatBuilder {
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	private static <T extends IJT400Format> ByteBuffer getSlice(final T obj, final Map<Integer, Field> fields, final ByteBuffer buffer) {		
-	
+	private static <T extends IJT400Format> ByteBuffer getSlice(final T obj, final Map<Integer, Field> fields, final ByteBuffer buffer) {
+
 		ByteBuffer data = null;
 
 		int offset = 0;
 		int length = 0;
-		
+
 		final Class<T> format = (Class<T>) obj.getClass();
-		
+
 		if (format.isAnnotationPresent(JT400Ref.class)) {
 
 			final JT400Ref ref = format.getAnnotation(JT400Ref.class);
@@ -281,15 +283,13 @@ enum JT400ExtFormatBuilder {
 			length = JT400ExtBinaryConverter.getIntValue(buffer, ref.length());
 
 			if (offset > 0 && length > 0) {
-				// JAVA 14+
-				// data = buffer.slice(offset, length);
 				data = slice(buffer, offset, length);
 			}
 		}
-		
+
 		return data;
 	}
-	
+
 	/**
 	 * ByteBuffer slice support for pre JAVA14
 	 * @param buffer
@@ -298,15 +298,20 @@ enum JT400ExtFormatBuilder {
 	 * @return
 	 */
 	private static ByteBuffer slice(final ByteBuffer buffer, final int offset, final int length) {
-		if ( buffer.capacity() < offset + length ) {
-			throw new RuntimeException("ByteBuffer too small, check JT400Format definition.");
+		/* for JAVA <14	 */
+		if (Runtime.version().feature() < 14) {
+			if ( buffer.capacity() < offset + length ) {
+				throw new RuntimeException("ByteBuffer too small, check JT400Format definition.");
+			}
+			buffer.position(offset);
+			final ByteBuffer data = buffer.slice();
+			data.limit(length);
+			return data;
 		}
-		buffer.position(offset);
-		final ByteBuffer data = buffer.slice();
-		data.limit(length);
-		return data;
+		// JAVA 17+
+		return buffer.slice(offset, length);
 	}
-	
+
 	/**
 	 * Get value from response buffer based on format structure
 	 *
@@ -388,7 +393,8 @@ enum JT400ExtFormatBuilder {
 			break;
 
 		case AS400DataType.TYPE_TEXT:
-			value = JT400ExtBinaryConverter.asAS400Text(as400, field, format.length(), tmp);
+			final int len = format.length() == 0 ? tmp.length : format.length();
+			value = JT400ExtBinaryConverter.asAS400Text(as400, field, len, tmp);
 			break;
 
 		default:
@@ -419,12 +425,8 @@ enum JT400ExtFormatBuilder {
 			return getStructureLength(field);
 		}
 
-		int len = JT400ExtBinaryConverter.getDataLength(format.type());
-		if (len == 0) {
-			len = format.length();
-		}
-
-		return len;
+		final int len = JT400ExtBinaryConverter.getDataLength(format.type());
+		return (len == 0) ? format.length() : len;
 	}
 
 	/**
@@ -433,24 +435,8 @@ enum JT400ExtFormatBuilder {
 	 * @return
 	 */
 	static int getStructureLength(final Field field) {
-
-		JT400Format format = null;
-
-		if (field.getType().isArray()) {
-			// For some reason, Eclipse report this as an error in Java < 14+
-			// Needed to refactor in 2-line block.
-			//format = field.getType().componentType().getAnnotation(JT400Format.class);
-			final Class<?> clazz = field.getType().getComponentType();
-			format = clazz.getAnnotation(JT400Format.class);
-		} else {
-			format = field.getType().getAnnotation(JT400Format.class);
-		}
-
-		if (format != null) {
-			return format.length();
-		}
-
-		return 0;
+		final Class<?> type = JT400ExtUtil.getFieldType(field);
+		return (type.isAnnotationPresent(JT400Format.class)) ? type.getAnnotation(JT400Format.class).length() :0;
 	}
 
 	/**
@@ -461,7 +447,10 @@ enum JT400ExtFormatBuilder {
 	 */
 	static int getDataLength(final JT400Format format) {
 
-		if (format.length() > 0) {
+		final int type = format.type();
+		final boolean isPacked = AS400DataType.TYPE_PACKED == type;
+
+		if (!isPacked && format.length() > 0) {
 			return format.length();
 		}
 
@@ -482,21 +471,21 @@ enum JT400ExtFormatBuilder {
 
 		final JT400Ref ref = field.getAnnotation(JT400Ref.class);
 		if (ref != null && ref.length() > -1) {
-			return getFieldOrRefLength(as400, fields, buffer, ref.length());			
+			return getFieldOrRefLength(as400, fields, buffer, ref.length());
 		}
 
 		final JT400Format jtformat = field.getAnnotation(JT400Format.class);
 		if (jtformat.of() > -1) {
 			return getFieldOrRefLength(as400, fields, buffer, jtformat.of());
 		}
-		
+
 		return jtformat.length();
 
 	}
 
 	/**
 	 * Get data offset position within byte array
-	 * 
+	 *
 	 * @param as400
 	 * @param format
 	 * @param fields
@@ -506,19 +495,14 @@ enum JT400ExtFormatBuilder {
 	 * @throws Exception
 	 */
 	static int getArrayOffset(final AS400 as400, final Map<Integer, Field> fields, final Field field, final ByteBuffer buffer) throws Exception {
-
-		final JT400Ref ref = field.getAnnotation(JT400Ref.class);
-		if (ref != null) {
-			return getFieldOrRefLength(as400, fields, buffer, ref.offset());
+		if (field.isAnnotationPresent(JT400Ref.class)) {
+			return getFieldOrRefLength(as400, fields, buffer, field.getAnnotation(JT400Ref.class).offset());
 		}
-
-		final JT400Format jt400Format = field.getAnnotation(JT400Format.class);
-		return jt400Format.offset();
-
+		return field.getAnnotation(JT400Format.class).offset();
 	}
 
 	/**
-	 * Get data value by offset position 
+	 * Get data value by offset position
 	 * @param as400
 	 * @param fields
 	 * @param buffer
@@ -528,20 +512,22 @@ enum JT400ExtFormatBuilder {
 	 */
 	private static  int getFieldOrRefLength(final AS400 as400, final Map<Integer, Field> fields, final ByteBuffer buffer, final int offset) throws Exception {
 
-		if (offset < 0) return 0;
-		
+		if (offset < 0) {
+			return 0;
+		}
+
 		if (fields.containsKey(offset)) {
 			final Field refField = fields.get(offset);
 			return getFieldValue(as400, refField, buffer);
 		} else {
 			return JT400ExtBinaryConverter.getIntValue(buffer, offset);
 		}
-		
+
 	}
-	
+
 	/**
 	 * Return value for service program call
-	 * 
+	 *
 	 * @param as400
 	 * @param fields
 	 * @param field
@@ -550,16 +536,10 @@ enum JT400ExtFormatBuilder {
 	 * @throws Exception
 	 */
 	private static  int getFieldValue(final AS400 as400, final Field field, final ByteBuffer buffer) throws Exception {
-
 		final JT400Format fmt = field.getAnnotation(JT400Format.class);
 		final byte [] tmp = JT400ExtUtil.getBytesFrom(buffer, fmt.offset(), getDataLength(fmt));
 		final Object value = getValue(as400, field, fmt, tmp);
-
-		if (value != null) {
-			return (int) value;
-		}
-
-		return 0;
+		return (value == null) ? 0 : (int) value;
 	}
 
 	/**
@@ -571,36 +551,28 @@ enum JT400ExtFormatBuilder {
 	 */
 	static <T extends IJT400Format> Map<Integer, Field> toFieldMap(final Class<T> format, final TYPE type) {
 
-		final List<Field> list = Arrays.asList(format.getDeclaredFields());
-		
-		Stream<Field> stream = list.stream();
-		stream = filter(stream, type);
-		
-		return collect(stream);
-
+		final AtomicInteger cnt = new AtomicInteger(0);
+		return JT400ExtUtil.getFormatFields(format)
+				.stream()
+				.filter(f-> filter(f, type))
+				.collect(Collectors.toMap(f -> toMapKey(f, cnt), field -> field));
 	}
-	
+
 	/**
 	 * Filter fields by offset type
 	 * @param stream
 	 * @param type
 	 * @return
 	 */
-	private static  Stream<Field> filter(final Stream<Field> stream, final TYPE type) {
-		
-		return stream.filter( f -> {
-			
-			if (!f.isAnnotationPresent(JT400Format.class)) {
-				return false;
-			}
-			
-			if (type == TYPE.ALL) return true;
+	private static boolean filter(final Field field, final TYPE type) {
 
-			final boolean isRelative = f.isAnnotationPresent(JT400Ref.class);
-			
-			return type == TYPE.NORMAL && isRelative ||	type == TYPE.RELATIVE && !isRelative;
-			
-		});		
+		if (type == TYPE.ALL) {
+			return true;
+		}
+
+		final boolean isRelative = field.isAnnotationPresent(JT400Ref.class);
+
+		return type == TYPE.NORMAL && isRelative ||	type == TYPE.RELATIVE && !isRelative;
 	}
 
 	/**
@@ -609,21 +581,9 @@ enum JT400ExtFormatBuilder {
 	 * @param type
 	 * @return
 	 */
-	private static  Map<Integer, Field> collect(final Stream<Field> stream) {
-		
-		final AtomicInteger cnt = new AtomicInteger(0);
-		
-		return stream.collect(Collectors.toMap(f -> {
-
-			final JT400Format fmt = f.getAnnotation(JT400Format.class);
-			
-			if (fmt.offset() < 0) {
-				return  cnt.decrementAndGet();
-			}
-
-			return f.getAnnotation(JT400Format.class).offset();
-
-		}, field -> field));
+	private static  Integer toMapKey(final Field field, final AtomicInteger cnt) {
+		final JT400Format fmt = field.getAnnotation(JT400Format.class);
+		return  (fmt.offset() < 0) ? cnt.decrementAndGet() : fmt.offset();
 	}
 
 }

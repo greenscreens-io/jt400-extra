@@ -6,10 +6,8 @@
  */
 package io.greenscreens.jt400.programs.qsys.qdcrdevd;
 
-import io.greenscreens.jt400.annotations.Id;
 import io.greenscreens.jt400.annotations.JT400Format;
 
-@Id(value = 0)
 @JT400Format(length = 177)
 public class DEVD0300 extends DEVD0100 {
 

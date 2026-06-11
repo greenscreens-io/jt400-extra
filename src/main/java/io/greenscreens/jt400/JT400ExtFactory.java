@@ -1,8 +1,5 @@
 /*
- * Copyright (C) 2015, 2025 Green Screens Ltd.
- *
- * https://www.greenscreens.io
- *
+ * Copyright (C) 2015, 2026 Green Screens Ltd.
  */
 package io.greenscreens.jt400;
 
@@ -27,7 +24,7 @@ import io.greenscreens.jt400.interfaces.IJT400Program;
  * or to build format object from byte array response
  */
 public enum JT400ExtFactory {
-;
+	;
 
 	/**
 	 * Convert JT400ExtFormat to ByteBuffer byte array
@@ -40,7 +37,7 @@ public enum JT400ExtFactory {
 	public static <T extends IJT400Format> ByteBuffer build(final AS400 as400, final T format) throws Exception {
 		return ByteBufferBuilder.build(as400, format);
 	}
-	
+
 	/**
 	 * Build format from response bytes based on JT400Format structure
 	 *
@@ -50,7 +47,7 @@ public enum JT400ExtFactory {
 	 * @return
 	 * @throws Exception
 	 */
-	public static    <T extends IJT400Format> T build(final AS400 as400, final Class<T> format, final ByteBuffer data) throws Exception {
+	public static <T extends IJT400Format> T build(final AS400 as400, final Class<T> format, final ByteBuffer data) throws Exception {
 		return JT400ExtFormatBuilder.build(as400, format, data);
 	}
 
@@ -60,8 +57,9 @@ public enum JT400ExtFactory {
 	 * @param as400
 	 * @param obj
 	 * @return
+	 * @throws Exception
 	 */
-	public static    <K extends IJT400Params> ProgramParameter[] build(final AS400 as400, final K obj) {
+	public static <K extends IJT400Params> ProgramParameter[] build(final AS400 as400, final K obj) throws Exception {
 		return JT400ExtParameterBuilder.build(as400, obj);
 	}
 
@@ -74,13 +72,13 @@ public enum JT400ExtFactory {
 	 * @param program
 	 * @return
 	 */
-	public static    <I extends IJT400Params, T> IJT400Program<I> create(final Class<T> caller, final Class<I> input, final String library, final String program) {
+	public static <I extends IJT400Params, T> IJT400Program<I> create(final Class<T> caller, final Class<I> input, final String library, final String program) {
 		return create(null, caller, input, library, program, false);
 	}
 
 	/**
 	 * Create Proxy Instance from interface implementing IJT400Program as service
-	 * 
+	 *
 	 * @param caller
 	 * @param input
 	 * @param library
@@ -88,7 +86,7 @@ public enum JT400ExtFactory {
 	 * @param service
 	 * @return
 	 */
-	public static    <I extends IJT400Params, T> IJT400Program<I> create(final Class<T> caller, final Class<I> input, final String library, final String program, final boolean service) {
+	public static <I extends IJT400Params, T> IJT400Program<I> create(final Class<T> caller, final Class<I> input, final String library, final String program, final boolean service) {
 		return create(null, caller, input, library, program, service);
 	}
 
@@ -100,17 +98,17 @@ public enum JT400ExtFactory {
 	 * @param input
 	 * @return
 	 */
-	public static    <I extends IJT400Params, T> IJT400Program<I> create(final AS400 as400, final Class<T> caller, final Class<I> input) {
+	public static <I extends IJT400Params, T> IJT400Program<I> create(final AS400 as400, final Class<T> caller, final Class<I> input) {
 
 		if (input == null) {
 			throw new RuntimeException("Program definition not defined!");
 		}
-		
+
 		final JT400Program pgm = input.getAnnotation(JT400Program.class);
 		if (pgm == null) {
 			throw new RuntimeException("Program not defined!");
 		}
-		
+
 		return create(as400, caller, input, pgm.library(), pgm.program(), pgm.service());
 	}
 
@@ -125,15 +123,15 @@ public enum JT400ExtFactory {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public static    <I extends IJT400Params, P extends IJT400Program<I>, T> P create(final AS400 as400, final Class<T> caller, final Class<I> input, final String library, final String program, final boolean service) {
+	public static <I extends IJT400Params, P extends IJT400Program<I>, T> P create(final AS400 as400, final Class<T> caller, final Class<I> input, final String library, final String program, final boolean service) {
 
 		final QSYSObjectPathName qsysPath = JT400ExtUtil.toQSYSPath(program, library, service);
 		final JT400ExtInvocationHandler<I> handler = new JT400ExtInvocationHandler<>(as400, input, qsysPath);
 
 		final Object instance = Proxy.newProxyInstance(
-				  IJT400Program.class.getClassLoader(),
-				  new Class<?> [] {caller},
-				  handler);
+				IJT400Program.class.getClassLoader(),
+				new Class<?> [] {caller},
+				handler);
 
 		return (P) instance;
 
@@ -145,7 +143,7 @@ public enum JT400ExtFactory {
 	 * @param program
 	 * @return
 	 */
-	public static    <T extends IJT400Program<? extends IJT400Params>> T create(final Class<T> program) {
+	public static <T extends IJT400Program<? extends IJT400Params>> T create(final Class<T> program) {
 		return create(null, program);
 	}
 
@@ -157,17 +155,17 @@ public enum JT400ExtFactory {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public static    <T extends IJT400Program<? extends IJT400Params>> T create(final AS400 as400, final Class<T> caller) {
+	public static <T extends IJT400Program<? extends IJT400Params>> T create(final AS400 as400, final Class<T> caller) {
 
 		Class<? extends IJT400Params> input = null;
 
 		final AnnotatedType[] intfs = caller.getAnnotatedInterfaces();
 		if (intfs != null) {
-			for (AnnotatedType intf : intfs) {
+			for (final AnnotatedType intf : intfs) {
 				final Type type = intf.getType();
 				if (type instanceof ParameterizedType) {
 					final Type [] pTypes = ((ParameterizedType) type).getActualTypeArguments();
-					for (Type pType : pTypes) {
+					for (final Type pType : pTypes) {
 
 						if (IJT400Params.class.isAssignableFrom((Class<?>) pType)) {
 							input = (Class<? extends IJT400Params>) pType;
@@ -179,7 +177,7 @@ public enum JT400ExtFactory {
 
 			}
 		}
-		
+
 		return (T) create(as400, caller, input);
 	}
 

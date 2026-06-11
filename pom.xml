@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.greenscreens</groupId>
 	<artifactId>jt400-extra</artifactId>
-	<version>1.3.0</version>
+	<version>1.4.0</version>
 
 	<name>JT400 Extra Pack</name>
 	<url>https://github.io/greenscreens-io/jt400-extra</url>
@@ -44,8 +44,8 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
+		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
 	</properties>
 
 	<build>
